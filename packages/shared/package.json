@@ -12,10 +12,12 @@
     "test:unit": "jest --testPathPattern=unit",
     "test:watch": "jest --watch"
   },
-  "dependencies": {},
+  "dependencies": {
+    "zod": "^4.3.6"
+  },
   "devDependencies": {
-    "typescript": "^5.4.0",
-    "@types/node": "^20.11.0"
+    "@types/node": "^20.11.0",
+    "typescript": "^5.4.0"
   },
   "engines": {
     "node": ">=20.0.0"
