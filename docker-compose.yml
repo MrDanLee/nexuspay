@@ -1,0 +1,123 @@
+version: '3.8'
+
+# NexusPay — Infrastructure Dependencies
+# Usage: docker compose up -d
+# This starts all infrastructure services needed for local development.
+# Application services are run separately with `npm run dev` in each service directory.
+
+services:
+  # ──────────────────────────────────────────────
+  # PostgreSQL instances (one per service)
+  # ──────────────────────────────────────────────
+  postgres-orders:
+    image: postgres:16-alpine
+    container_name: nexuspay-pg-orders
+    environment:
+      POSTGRES_DB: nexuspay_orders
+      POSTGRES_USER: nexuspay
+      POSTGRES_PASSWORD: nexuspay_dev
+    ports:
+      - '5433:5432'
+    volumes:
+      - pgdata-orders:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U nexuspay -d nexuspay_orders']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  postgres-payments:
+    image: postgres:16-alpine
+    container_name: nexuspay-pg-payments
+    environment:
+      POSTGRES_DB: nexuspay_payments
+      POSTGRES_USER: nexuspay
+      POSTGRES_PASSWORD: nexuspay_dev
+    ports:
+      - '5434:5432'
+    volumes:
+      - pgdata-payments:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U nexuspay -d nexuspay_payments']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  postgres-inventory:
+    image: postgres:16-alpine
+    container_name: nexuspay-pg-inventory
+    environment:
+      POSTGRES_DB: nexuspay_inventory
+      POSTGRES_USER: nexuspay
+      POSTGRES_PASSWORD: nexuspay_dev
+    ports:
+      - '5435:5432'
+    volumes:
+      - pgdata-inventory:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U nexuspay -d nexuspay_inventory']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  postgres-audit:
+    image: postgres:16-alpine
+    container_name: nexuspay-pg-audit
+    environment:
+      POSTGRES_DB: nexuspay_audit
+      POSTGRES_USER: nexuspay
+      POSTGRES_PASSWORD: nexuspay_dev
+    ports:
+      - '5436:5432'
+    volumes:
+      - pgdata-audit:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U nexuspay -d nexuspay_audit']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ──────────────────────────────────────────────
+  # RabbitMQ (message broker)
+  # ──────────────────────────────────────────────
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: nexuspay-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: nexuspay
+      RABBITMQ_DEFAULT_PASS: nexuspay_dev
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ['CMD', 'rabbitmq-diagnostics', '-q', 'ping']
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  # ──────────────────────────────────────────────
+  # Redis (caching, rate limiting, idempotency)
+  # ──────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: nexuspay-redis
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata-orders:
+  pgdata-payments:
+  pgdata-inventory:
+  pgdata-audit:
+  rabbitmq-data:
+  redis-data:
