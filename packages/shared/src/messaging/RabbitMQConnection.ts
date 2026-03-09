@@ -1,4 +1,4 @@
-import amqp, { Connection, Channel } from 'amqplib';
+import amqp from 'amqplib';
 import { Logger } from 'pino';
 
 /**
@@ -9,8 +9,8 @@ import { Logger } from 'pino';
  * should use a single instance of this class.
  */
 export class RabbitMQConnection {
-  private connection: Connection | null = null;
-  private channel: Channel | null = null;
+  private connection: amqp.ChannelModel | null = null;
+  private channel: amqp.Channel | null = null;
   private reconnecting = false;
   private readonly reconnectDelay = 5000;
 
@@ -35,7 +35,7 @@ export class RabbitMQConnection {
       this.logger.info('Connected to RabbitMQ');
 
       // Handle connection errors
-      this.connection.on('error', (err) => {
+      this.connection.on('error', (err: Error) => {
         this.logger.error({ err }, 'RabbitMQ connection error');
         this.handleDisconnect();
       });
@@ -53,7 +53,7 @@ export class RabbitMQConnection {
   /**
    * Get the current channel. Throws if not connected.
    */
-  getChannel(): Channel {
+  getChannel(): amqp.Channel {
     if (!this.channel) {
       throw new Error('RabbitMQ channel not available. Call connect() first.');
     }
