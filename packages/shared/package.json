@@ -15,7 +15,6 @@
   "dependencies": {
     "decimal.js": "^10.6.0",
     "pino": "^10.3.1",
-    "uuid": "^13.0.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
@@ -23,8 +22,10 @@
     "@types/jest": "^30.0.0",
     "@types/node": "^20.11.0",
     "@types/pino": "^7.0.4",
-    "@types/uuid": "^10.0.0",
+    "@types/supertest": "^7.2.0",
+    "express": "^5.2.1",
     "jest": "^30.2.0",
+    "supertest": "^7.2.2",
     "ts-jest": "^29.4.6",
     "typescript": "^5.4.0"
   },

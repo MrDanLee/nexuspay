@@ -1,5 +1,6 @@
+import { randomUUID } from 'node:crypto';
+
 import { Request, Response, NextFunction } from 'express';
-import { v4 as uuidv4 } from 'uuid';
 
 import { RequestContext } from '../context/RequestContext';
 
@@ -17,7 +18,7 @@ import { RequestContext } from '../context/RequestContext';
  */
 export function requestIdMiddleware() {
   return (req: Request, res: Response, next: NextFunction): void => {
-    const requestId = (req.headers['x-request-id'] as string) ?? uuidv4();
+    const requestId = (req.headers['x-request-id'] as string) ?? randomUUID();
     const correlationId = (req.headers['x-correlation-id'] as string) ?? requestId;
 
     // Set response headers for client correlation
