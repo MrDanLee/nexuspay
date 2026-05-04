@@ -1,22 +1,39 @@
+# Dependencies
 node_modules/
 package-lock.json
+
+# Build output
 dist/
 build/
+
+# Environment
 .env
 .env.local
 .env.*.local
+
+# IDE
 .idea/
 .vscode/
 *.swp
 *.swo
 *~
+
+# OS
 .DS_Store
 Thumbs.db
+
+# Test coverage
 coverage/
 .nyc_output/
+
+# Logs
 logs/
 *.log
 npm-debug.log*
+
+# Docker
 .docker/
+
+# Temporary
 tmp/
 temp/
