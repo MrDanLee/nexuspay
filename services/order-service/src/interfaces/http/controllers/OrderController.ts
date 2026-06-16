@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { ValidationError, RequestContext } from '@nexuspay/shared';
+import { ValidationError } from '@nexuspay/shared';
 
 import { CreateOrderHandler } from '../../../application/handlers/CreateOrderHandler';
 import { CancelOrderHandler } from '../../../application/handlers/CancelOrderHandler';
