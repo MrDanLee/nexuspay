@@ -2,7 +2,7 @@ import { DomainEvent, EventType, createLogger } from '@nexuspay/shared';
 
 import { OrderStatus } from '../../domain/value-objects/OrderStatus';
 import { OrderRepository } from '../../application/ports/OrderRepository';
-import { orderConfirmedEvent } from '../../application/events/orderEvents';
+import { orderConfirmedEvent, orderCancelledEvent } from '../../application/events/orderEvents';
 
 const logger = createLogger({ service: 'order-service', component: 'eventHandlers' });
 
@@ -24,6 +24,9 @@ export class OrderEventHandlers {
         break;
       case EventType.PAYMENT_COMPLETED:
         await this.onPaymentCompleted(event);
+        break;
+      case EventType.PAYMENT_FAILED:
+        await this.onPaymentFailed(event);
         break;
       default:
         logger.debug({ type: event.type }, 'Ignoring event');
@@ -63,5 +66,30 @@ export class OrderEventHandlers {
     order.transitionTo(OrderStatus.CONFIRMED);
     await this.orderRepository.update(order, [orderConfirmedEvent(order)]);
     logger.info({ orderId }, 'Order confirmed, emitted order.confirmed');
+  }
+
+  private async onPaymentFailed(event: DomainEvent): Promise<void> {
+    const { orderId } = event.data as { orderId: string };
+    const order = await this.orderRepository.findById(orderId);
+    if (!order) return;
+
+    if (order.status === OrderStatus.CANCELLED) {
+      logger.debug({ orderId }, 'payment.failed already applied');
+      return;
+    }
+
+    if (order.status === OrderStatus.PAYMENT_PENDING) {
+      order.transitionTo(OrderStatus.PAYMENT_FAILED);
+    }
+
+    if (!order.isCancellable()) {
+      logger.warn({ orderId, status: order.status }, 'payment.failed for non-cancellable order');
+      return;
+    }
+
+    // Cancelling emits order.cancelled, which releases the reserved stock.
+    order.cancel();
+    await this.orderRepository.update(order, [orderCancelledEvent(order, 'payment failed')]);
+    logger.info({ orderId }, 'Order cancelled after payment failure, emitted order.cancelled');
   }
 }
