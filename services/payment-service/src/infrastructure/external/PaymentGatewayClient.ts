@@ -39,6 +39,17 @@ export class GatewayError extends Error {
   }
 }
 
+/**
+ * Whether a gateway failure is worth retrying.
+ *
+ * 5xx responses and timeouts are transient (retry); 4xx responses (e.g. a
+ * 402 card decline) are permanent (do not retry). Used by both the retry
+ * helper and the circuit breaker so timeouts never count as a hard decline.
+ */
+export function isRetryableGatewayError(error: unknown): boolean {
+  return error instanceof GatewayError && (error.retryable || error.statusCode >= 500);
+}
+
 export interface GatewayOptions {
   failureRate: number;
   minLatencyMs: number;
@@ -77,11 +88,16 @@ export class PaymentGatewayClient {
     if (roll >= this.options.failureRate) {
       return;
     }
-    // Half of the failures are permanent declines, half are transient.
-    if (roll < this.options.failureRate / 2) {
+    // Distribute failures: ~40% permanent declines (4xx), ~30% transient
+    // 5xx, ~30% timeouts (504). Timeouts are retryable like 5xx.
+    const band = roll / this.options.failureRate;
+    if (band < 0.4) {
       throw new GatewayError('Card declined', false, 402);
     }
-    throw new GatewayError('Gateway temporarily unavailable', true, 503);
+    if (band < 0.7) {
+      throw new GatewayError('Gateway temporarily unavailable', true, 503);
+    }
+    throw new GatewayError('Gateway timeout', true, 504);
   }
 
   private async simulateLatency(): Promise<void> {

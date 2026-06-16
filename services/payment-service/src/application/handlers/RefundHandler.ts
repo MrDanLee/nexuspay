@@ -10,7 +10,7 @@ import { Payment } from '../../domain/entities/Payment';
 import { PaymentStatus } from '../../domain/value-objects/PaymentStatus';
 import {
   PaymentGatewayClient,
-  GatewayError,
+  isRetryableGatewayError,
 } from '../../infrastructure/external/PaymentGatewayClient';
 import { PaymentRepository } from '../ports/PaymentRepository';
 import { RefundRepository, RefundRecord } from '../ports/RefundRepository';
@@ -89,7 +89,7 @@ export class RefundHandler {
           maxAttempts: this.retryConfig.maxAttempts,
           baseDelayMs: this.retryConfig.baseDelayMs,
           sleep: this.retryConfig.sleep,
-          isRetryable: (error) => error instanceof GatewayError && error.retryable,
+          isRetryable: isRetryableGatewayError,
         },
       );
       gatewayRefundId = result.refundId;

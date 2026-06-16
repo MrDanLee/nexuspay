@@ -19,7 +19,7 @@ import { KnexRefundRepository } from './infrastructure/repositories/KnexRefundRe
 import { PaymentGatewayClient } from './infrastructure/external/PaymentGatewayClient';
 import { CircuitBreaker } from './infrastructure/resilience/CircuitBreaker';
 import { PaymentMetrics } from './infrastructure/observability/PaymentMetrics';
-import { GatewayError } from './infrastructure/external/PaymentGatewayClient';
+import { isRetryableGatewayError } from './infrastructure/external/PaymentGatewayClient';
 import { ProcessPaymentHandler } from './application/handlers/ProcessPaymentHandler';
 import { RefundHandler } from './application/handlers/RefundHandler';
 import { ProcessWebhookHandler } from './application/handlers/ProcessWebhookHandler';
@@ -51,8 +51,8 @@ const gateway = new PaymentGatewayClient({
 const circuitBreaker = new CircuitBreaker({
   failureThreshold: config.CIRCUIT_BREAKER_THRESHOLD,
   resetTimeoutMs: config.CIRCUIT_BREAKER_TIMEOUT_MS,
-  // Only transient gateway failures should trip the breaker.
-  shouldCount: (error) => error instanceof GatewayError && error.retryable,
+  // Only transient gateway failures (5xx / timeout) should trip the breaker.
+  shouldCount: isRetryableGatewayError,
   onStateChange: ({ from, to }) => {
     metrics.setCircuitState(to);
     logger.warn({ from, to }, 'Payment gateway circuit breaker state changed');

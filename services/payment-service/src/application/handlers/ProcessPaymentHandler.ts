@@ -4,7 +4,7 @@ import { Payment } from '../../domain/entities/Payment';
 import { PaymentStatus } from '../../domain/value-objects/PaymentStatus';
 import {
   PaymentGatewayClient,
-  GatewayError,
+  isRetryableGatewayError,
 } from '../../infrastructure/external/PaymentGatewayClient';
 import {
   CircuitBreaker,
@@ -79,7 +79,7 @@ export class ProcessPaymentHandler {
             maxAttempts: this.retryConfig.maxAttempts,
             baseDelayMs: this.retryConfig.baseDelayMs,
             sleep: this.retryConfig.sleep,
-            isRetryable: (error) => error instanceof GatewayError && error.retryable,
+            isRetryable: isRetryableGatewayError,
             onRetry: (info) =>
               logger.warn(
                 { orderId: command.orderId, attempt: info.attempt, delayMs: info.delayMs },
