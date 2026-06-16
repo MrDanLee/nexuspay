@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import compression from 'compression';
 import {
   securityHeaders,
+  sanitizeMiddleware,
   createLogger,
   requestIdMiddleware,
   requestLoggerMiddleware,
@@ -98,6 +99,7 @@ app.use(requestLoggerMiddleware(logger));
 app.use('/webhooks', createWebhookRoutes(webhookController));
 
 app.use(express.json({ limit: '10kb' }));
+app.use(sanitizeMiddleware());
 
 // Health checks
 app.get('/health/live', (_req: Request, res: Response) => {

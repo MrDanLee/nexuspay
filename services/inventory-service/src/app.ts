@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import compression from 'compression';
 import {
   securityHeaders,
+  sanitizeMiddleware,
   createLogger,
   requestIdMiddleware,
   requestLoggerMiddleware,
@@ -54,6 +55,7 @@ const app = express();
 app.use(securityHeaders());
 app.use(compression());
 app.use(express.json({ limit: '10kb' }));
+app.use(sanitizeMiddleware());
 app.use(requestIdMiddleware());
 app.use(requestLoggerMiddleware(logger));
 
