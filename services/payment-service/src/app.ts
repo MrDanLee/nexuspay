@@ -7,7 +7,9 @@ import {
   requestIdMiddleware,
   requestLoggerMiddleware,
   errorHandlerMiddleware,
+  idempotencyMiddleware,
   HealthChecker,
+  RedisClient,
 } from '@nexuspay/shared';
 
 import { config } from './config';
@@ -34,6 +36,9 @@ const logger = createLogger({ service: 'payment-service' });
 const db = getDatabase();
 const paymentRepository = new KnexPaymentRepository(db);
 const refundRepository = new KnexRefundRepository(db);
+
+const redis = new RedisClient(config.REDIS_URL, logger);
+const idempotency = idempotencyMiddleware(redis, { required: true });
 
 const metrics = new PaymentMetrics();
 
@@ -113,7 +118,7 @@ app.get('/metrics', (_req: Request, res: Response) => {
 });
 
 // API routes
-app.use(registerRoutes(paymentController));
+app.use(registerRoutes(paymentController, idempotency));
 
 // Error handler (must be last)
 app.use(errorHandlerMiddleware(logger));
