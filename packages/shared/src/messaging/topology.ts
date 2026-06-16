@@ -71,8 +71,13 @@ export async function setupTopology(channel: Channel): Promise<void> {
   );
   await channel.bindQueue(Queues.ORDER_PAYMENT_EVENTS, Exchanges.PAYMENT, EventType.PAYMENT_FAILED);
 
-  // Order reacts to a failed reservation.
+  // Order reacts to reservation outcomes (advance the saga or compensate).
   await channel.assertQueue(Queues.ORDER_INVENTORY_EVENTS, queueOptions);
+  await channel.bindQueue(
+    Queues.ORDER_INVENTORY_EVENTS,
+    Exchanges.INVENTORY,
+    EventType.INVENTORY_RESERVED,
+  );
   await channel.bindQueue(
     Queues.ORDER_INVENTORY_EVENTS,
     Exchanges.INVENTORY,
