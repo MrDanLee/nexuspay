@@ -58,6 +58,8 @@ export {
   DEFAULT_BUCKETS,
 } from './observability/metrics';
 export type { Labels } from './observability/metrics';
+export { MetricNames } from './observability/metricNames';
+export type { MetricName } from './observability/metricNames';
 export {
   generateTraceId,
   generateSpanId,

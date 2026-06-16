@@ -1,3 +1,5 @@
+import { MetricNames } from '@nexuspay/shared';
+
 import { CircuitState } from '../resilience/CircuitBreaker';
 
 /**
@@ -41,16 +43,20 @@ export class PaymentMetrics {
     const stateValue =
       this.circuitState === 'CLOSED' ? 0 : this.circuitState === 'HALF_OPEN' ? 1 : 2;
 
+    const succeeded = MetricNames.PAYMENT_SUCCEEDED_TOTAL;
+    const failed = MetricNames.PAYMENT_FAILED_TOTAL;
+    const circuit = MetricNames.PAYMENT_CIRCUIT_BREAKER_STATE;
+
     return [
-      '# HELP payment_succeeded_total Total number of successful payments',
-      '# TYPE payment_succeeded_total counter',
-      `payment_succeeded_total ${this.paymentsSucceeded}`,
-      '# HELP payment_failed_total Total number of failed payments',
-      '# TYPE payment_failed_total counter',
-      `payment_failed_total ${this.paymentsFailed}`,
-      '# HELP payment_circuit_breaker_state Circuit breaker state (0=closed, 1=half_open, 2=open)',
-      '# TYPE payment_circuit_breaker_state gauge',
-      `payment_circuit_breaker_state ${stateValue}`,
+      `# HELP ${succeeded} Total number of successful payments`,
+      `# TYPE ${succeeded} counter`,
+      `${succeeded} ${this.paymentsSucceeded}`,
+      `# HELP ${failed} Total number of failed payments`,
+      `# TYPE ${failed} counter`,
+      `${failed} ${this.paymentsFailed}`,
+      `# HELP ${circuit} Circuit breaker state (0=closed, 1=half_open, 2=open)`,
+      `# TYPE ${circuit} gauge`,
+      `${circuit} ${stateValue}`,
       '',
     ].join('\n');
   }

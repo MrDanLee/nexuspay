@@ -1,4 +1,4 @@
-import { defaultRegistry } from '@nexuspay/shared';
+import { defaultRegistry, MetricNames } from '@nexuspay/shared';
 
 /**
  * Business metrics for the order service, recorded on the shared default
@@ -8,17 +8,17 @@ import { defaultRegistry } from '@nexuspay/shared';
  * complement the RED metrics and feed the order-rate panels in Grafana.
  */
 const ordersCreated = defaultRegistry.counter({
-  name: 'orders_created_total',
+  name: MetricNames.ORDERS_CREATED_TOTAL,
   help: 'Total number of orders created',
 });
 
 const ordersConfirmed = defaultRegistry.counter({
-  name: 'orders_confirmed_total',
+  name: MetricNames.ORDERS_CONFIRMED_TOTAL,
   help: 'Total number of orders confirmed',
 });
 
 const ordersCancelled = defaultRegistry.counter({
-  name: 'orders_cancelled_total',
+  name: MetricNames.ORDERS_CANCELLED_TOTAL,
   help: 'Total number of orders cancelled',
   labelNames: ['reason'],
 });

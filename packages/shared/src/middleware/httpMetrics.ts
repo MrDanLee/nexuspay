@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 
 import { MetricsRegistry, defaultRegistry } from '../observability/metrics';
+import { MetricNames } from '../observability/metricNames';
 
 export interface HttpMetricsOptions {
   /** Registry to record into. Defaults to the process-wide registry. */
@@ -28,18 +29,18 @@ export function httpMetricsMiddleware(options: HttpMetricsOptions = {}) {
   const ignore = new Set(options.ignorePaths ?? ['/metrics', '/health/live', '/health/ready']);
 
   const duration = registry.histogram({
-    name: 'http_request_duration_seconds',
+    name: MetricNames.HTTP_REQUEST_DURATION_SECONDS,
     help: 'HTTP request latency in seconds',
     labelNames: ['method', 'route', 'status'],
     buckets: options.buckets,
   });
   const total = registry.counter({
-    name: 'http_requests_total',
+    name: MetricNames.HTTP_REQUESTS_TOTAL,
     help: 'Total number of HTTP requests',
     labelNames: ['method', 'route', 'status'],
   });
   const active = registry.gauge({
-    name: 'http_active_requests',
+    name: MetricNames.HTTP_ACTIVE_REQUESTS,
     help: 'Number of HTTP requests currently being processed',
   });
 
