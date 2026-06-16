@@ -8,6 +8,7 @@ import {
   PaginationOptions,
   PaginatedResult,
 } from '../../application/ports/OrderRepository';
+import { OutboxEventInput } from '../../application/ports/OutboxRepository';
 
 interface OrderRow {
   id: string;
@@ -44,7 +45,7 @@ interface OrderItemRow {
 export class KnexOrderRepository implements OrderRepository {
   constructor(private readonly db: Knex) { }
 
-  async save(order: Order): Promise<Order> {
+  async save(order: Order, outboxEvents: OutboxEventInput[] = []): Promise<Order> {
     return this.db.transaction(async (trx) => {
       // Insert order
       const [row] = await trx<OrderRow>('orders')
@@ -79,6 +80,8 @@ export class KnexOrderRepository implements OrderRepository {
         );
       }
 
+      await this.writeOutbox(trx, outboxEvents);
+
       return this.toDomain(row, order.items.map((item, index) => ({
         id: `generated-${index}`,
         order_id: row.id,
@@ -89,6 +92,25 @@ export class KnexOrderRepository implements OrderRepository {
         total_price: item.totalPrice.toFixed(),
       })));
     });
+  }
+
+  /**
+   * Insert outbox events within the caller's transaction so they are
+   * committed atomically with the aggregate change.
+   */
+  private async writeOutbox(
+    trx: Knex.Transaction,
+    events: OutboxEventInput[],
+  ): Promise<void> {
+    if (events.length === 0) return;
+    await trx('outbox_events').insert(
+      events.map((event) => ({
+        aggregate_type: event.aggregateType,
+        aggregate_id: event.aggregateId,
+        event_type: event.eventType,
+        payload: event.payload,
+      })),
+    );
   }
 
   async findById(id: string): Promise<Order | null> {
@@ -114,34 +136,37 @@ export class KnexOrderRepository implements OrderRepository {
     return this.toDomain(row, items);
   }
 
-  async update(order: Order): Promise<Order> {
+  async update(order: Order, outboxEvents: OutboxEventInput[] = []): Promise<Order> {
     if (!order.id) {
       throw new Error('Cannot update order without ID');
     }
 
-    const updated = await this.db<OrderRow>('orders')
-      .where({ id: order.id, version: order.version - 1 })
-      .update({
-        status: order.status,
-        total_amount: order.totalAmount.toFixed(),
-        updated_at: new Date(),
-        version: order.version,
-        metadata: order.metadata,
-      })
-      .returning('*');
+    return this.db.transaction(async (trx) => {
+      const updated = await trx<OrderRow>('orders')
+        .where({ id: order.id, version: order.version - 1 })
+        .update({
+          status: order.status,
+          total_amount: order.totalAmount.toFixed(),
+          updated_at: new Date(),
+          version: order.version,
+          metadata: order.metadata,
+        })
+        .returning('*');
 
-    const updatedRow = updated[0];
-    if (!updatedRow) {
-      throw new ConflictError(
-        `Order ${order.id} was modified by another process (version conflict)`,
-        { metadata: { orderId: order.id, expectedVersion: order.version - 1 } },
-      );
-    }
+      const updatedRow = updated[0];
+      if (!updatedRow) {
+        throw new ConflictError(
+          `Order ${order.id} was modified by another process (version conflict)`,
+          { metadata: { orderId: order.id, expectedVersion: order.version - 1 } },
+        );
+      }
 
-    const items = await this.db<OrderItemRow>('order_items')
-      .where({ order_id: order.id });
+      await this.writeOutbox(trx, outboxEvents);
 
-    return this.toDomain(updatedRow, items);
+      const items = await trx<OrderItemRow>('order_items').where({ order_id: order.id });
+
+      return this.toDomain(updatedRow, items);
+    });
   }
 
   async findByCustomerId(

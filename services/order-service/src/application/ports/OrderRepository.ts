@@ -1,5 +1,7 @@
 import { Order } from '../../domain/entities/Order';
 
+import { OutboxEventInput } from './OutboxRepository';
+
 /**
  * Port (interface) for order persistence.
  *
@@ -9,10 +11,11 @@ import { Order } from '../../domain/entities/Order';
  */
 export interface OrderRepository {
   /**
-   * Save a new order.
+   * Save a new order, optionally writing domain events to the outbox in
+   * the same transaction (transactional outbox).
    * @returns The saved order with generated ID
    */
-  save(order: Order): Promise<Order>;
+  save(order: Order, outboxEvents?: OutboxEventInput[]): Promise<Order>;
 
   /**
    * Find an order by ID.
@@ -27,10 +30,11 @@ export interface OrderRepository {
   findByIdempotencyKey(key: string): Promise<Order | null>;
 
   /**
-   * Update an existing order.
+   * Update an existing order, optionally writing domain events to the
+   * outbox in the same transaction.
    * Uses optimistic locking — throws ConflictError if version mismatch.
    */
-  update(order: Order): Promise<Order>;
+  update(order: Order, outboxEvents?: OutboxEventInput[]): Promise<Order>;
 
   /**
    * List orders for a customer with cursor-based pagination.
