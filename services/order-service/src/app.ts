@@ -10,6 +10,7 @@ import {
   idempotencyMiddleware,
   rateLimiterMiddleware,
   RedisSlidingWindowStore,
+  authMiddleware,
   HealthChecker,
   RedisClient,
 } from '@nexuspay/shared';
@@ -79,7 +80,8 @@ app.get('/health/ready', async (_req: Request, res: Response) => {
   res.status(statusCode).json(result);
 });
 
-// Rate limit the public API (not health/metrics probes).
+// Authenticate the public API, then rate limit (so limits are per-user).
+app.use('/api/v1', authMiddleware({ secret: config.JWT_SECRET }));
 app.use('/api/v1', rateLimiter);
 
 // API routes
