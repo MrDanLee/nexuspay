@@ -2,6 +2,7 @@ import { DomainEvent, EventType, createLogger } from '@nexuspay/shared';
 
 import { OrderStatus } from '../../domain/value-objects/OrderStatus';
 import { OrderRepository } from '../../application/ports/OrderRepository';
+import { SagaStepRepository } from '../../application/ports/SagaStepRepository';
 import { orderConfirmedEvent, orderCancelledEvent } from '../../application/events/orderEvents';
 
 const logger = createLogger({ service: 'order-service', component: 'eventHandlers' });
@@ -15,7 +16,10 @@ const logger = createLogger({ service: 'order-service', component: 'eventHandler
  * the target state, the event is treated as a duplicate and ignored.
  */
 export class OrderEventHandlers {
-  constructor(private readonly orderRepository: OrderRepository) {}
+  constructor(
+    private readonly orderRepository: OrderRepository,
+    private readonly sagaSteps: SagaStepRepository,
+  ) {}
 
   handle = async (event: DomainEvent): Promise<void> => {
     switch (event.type) {
@@ -49,6 +53,7 @@ export class OrderEventHandlers {
     order.transitionTo(OrderStatus.INVENTORY_RESERVED);
     order.transitionTo(OrderStatus.PAYMENT_PENDING);
     await this.orderRepository.update(order);
+    await this.sagaSteps.record(orderId, 'inventory_reserved', 'COMPLETED');
     logger.info({ orderId }, 'Order advanced to PAYMENT_PENDING');
   }
 
@@ -68,6 +73,7 @@ export class OrderEventHandlers {
 
     order.transitionTo(OrderStatus.CONFIRMED);
     await this.orderRepository.update(order, [orderConfirmedEvent(order)]);
+    await this.sagaSteps.record(orderId, 'payment_completed', 'COMPLETED');
     logger.info({ orderId }, 'Order confirmed, emitted order.confirmed');
   }
 
@@ -93,6 +99,7 @@ export class OrderEventHandlers {
     // Cancelling emits order.cancelled, which releases the reserved stock.
     order.cancel();
     await this.orderRepository.update(order, [orderCancelledEvent(order, 'payment failed')]);
+    await this.sagaSteps.record(orderId, 'payment_failed', 'FAILED', 'payment failed');
     logger.info({ orderId }, 'Order cancelled after payment failure, emitted order.cancelled');
   }
 
@@ -118,6 +125,7 @@ export class OrderEventHandlers {
     // Nothing was reserved, so no compensation event is emitted.
     order.cancel();
     await this.orderRepository.update(order);
+    await this.sagaSteps.record(orderId, 'inventory_failed', 'FAILED', 'inventory failed');
     logger.info({ orderId }, 'Order cancelled after inventory failure');
   }
 }
