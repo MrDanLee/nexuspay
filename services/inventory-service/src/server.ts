@@ -1,26 +1,37 @@
-import { app } from './app';
+import { createLogger } from '@nexuspay/shared';
 
-const PORT = process.env.PORT ?? 3003;
+import { app, reservationExpiryJob } from './app';
+import { config } from './config';
+import { closeDatabase } from './infrastructure/database/connection';
+
+const logger = createLogger({ service: 'inventory-service' });
 const SERVICE_NAME = 'inventory-service';
 
-const server = app.listen(PORT, () => {
-  // eslint-disable-next-line no-console
-  console.log(`[${SERVICE_NAME}] Server running on port ${PORT}`);
+const server = app.listen(config.PORT, () => {
+  logger.info({ port: config.PORT }, `${SERVICE_NAME} running`);
+  reservationExpiryJob.start();
 });
 
-const shutdown = (signal: string): void => {
-  // eslint-disable-next-line no-console
-  console.log(`[${SERVICE_NAME}] Received ${signal}. Starting graceful shutdown...`);
+const shutdown = async (signal: string): Promise<void> => {
+  logger.info({ signal }, 'Starting graceful shutdown...');
 
-  server.close(() => {
-    // eslint-disable-next-line no-console
-    console.log(`[${SERVICE_NAME}] HTTP server closed`);
+  reservationExpiryJob.stop();
+
+  server.close(async () => {
+    logger.info('HTTP server closed');
+
+    try {
+      await closeDatabase();
+      logger.info('Database connection closed');
+    } catch (error) {
+      logger.error({ err: error }, 'Error closing database connection');
+    }
+
     process.exit(0);
   });
 
   setTimeout(() => {
-    // eslint-disable-next-line no-console
-    console.error(`[${SERVICE_NAME}] Forced shutdown after timeout`);
+    logger.error('Forced shutdown after timeout');
     process.exit(1);
   }, 10_000);
 };
@@ -29,8 +40,7 @@ process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('SIGINT', () => shutdown('SIGINT'));
 
 process.on('unhandledRejection', (reason: unknown) => {
-  // eslint-disable-next-line no-console
-  console.error(`[${SERVICE_NAME}] Unhandled rejection:`, reason);
+  logger.error({ err: reason }, 'Unhandled rejection');
   process.exit(1);
 });
 
