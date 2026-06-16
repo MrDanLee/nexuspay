@@ -58,6 +58,14 @@ export {
   DEFAULT_BUCKETS,
 } from './observability/metrics';
 export type { Labels } from './observability/metrics';
+export {
+  generateTraceId,
+  generateSpanId,
+  parseTraceparent,
+  formatTraceparent,
+  continueTrace,
+} from './observability/trace';
+export type { TraceContext } from './observability/trace';
 
 // Middleware
 export { requestIdMiddleware } from './middleware/requestId';
