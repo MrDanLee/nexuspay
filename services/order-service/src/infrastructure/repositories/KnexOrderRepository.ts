@@ -50,6 +50,7 @@ export class KnexOrderRepository implements OrderRepository {
       // Insert order
       const [row] = await trx<OrderRow>('orders')
         .insert({
+          id: order.id,
           customer_id: order.customerId,
           status: order.status,
           total_amount: order.totalAmount.toFixed(),

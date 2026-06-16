@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto';
+
 import { Money, ConflictError, ValidationError } from '@nexuspay/shared';
 
 import { OrderStatus, canTransition, isCancellable, isTerminal } from '../value-objects/OrderStatus';
@@ -31,7 +33,7 @@ export interface OrderProps {
  * - Total amount is always consistent with items
  */
 export class Order {
-  readonly id?: string;
+  readonly id: string;
   readonly customerId: string;
   readonly items: OrderItem[];
   readonly totalAmount: Money;
@@ -57,7 +59,7 @@ export class Order {
       throw new ValidationError('Idempotency key is required');
     }
 
-    this.id = props.id;
+    this.id = props.id ?? randomUUID();
     this.customerId = props.customerId;
     this.currency = props.currency || 'USD';
     this.idempotencyKey = props.idempotencyKey;

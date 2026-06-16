@@ -3,6 +3,7 @@ import { Money, createLogger } from '@nexuspay/shared';
 import { Order } from '../../domain/entities/Order';
 import { OrderRepository } from '../ports/OrderRepository';
 import { CreateOrderCommand } from '../commands/CreateOrderCommand';
+import { orderCreatedEvent } from '../events/orderEvents';
 
 const logger = createLogger({ service: 'order-service', handler: 'CreateOrderHandler' });
 
@@ -50,8 +51,8 @@ export class CreateOrderHandler {
       })),
     });
 
-    // Persist
-    const saved = await this.orderRepository.save(order);
+    // Persist the order and the OrderCreated event atomically (outbox).
+    const saved = await this.orderRepository.save(order, [orderCreatedEvent(order)]);
 
     logger.info(
       {
