@@ -64,6 +64,7 @@ export { RabbitMQConnection } from './messaging/RabbitMQConnection';
 export { Publisher } from './messaging/Publisher';
 export { Consumer } from './messaging/Consumer';
 export type { EventHandler } from './messaging/Consumer';
+export { setupTopology, Exchanges, Queues } from './messaging/topology';
 
 // Cache
 export { RedisClient } from './cache/RedisClient';
