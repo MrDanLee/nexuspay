@@ -8,6 +8,8 @@ import {
   requestLoggerMiddleware,
   errorHandlerMiddleware,
   idempotencyMiddleware,
+  rateLimiterMiddleware,
+  RedisSlidingWindowStore,
   HealthChecker,
   RedisClient,
 } from '@nexuspay/shared';
@@ -30,6 +32,12 @@ const db = getDatabase();
 const orderRepository = new KnexOrderRepository(db);
 const redis = new RedisClient(config.REDIS_URL, logger);
 const idempotency = idempotencyMiddleware(redis);
+const rateLimiter = rateLimiterMiddleware(new RedisSlidingWindowStore(redis.getClient()), {
+  windowMs: config.RATE_LIMIT_WINDOW_MS,
+  max: config.RATE_LIMIT_MAX_REQUESTS,
+  keyGenerator: (req) =>
+    (req as Request & { userId?: string }).userId ?? req.ip ?? 'anonymous',
+});
 
 // ─── Application Handlers ───────────────────────
 const createOrderHandler = new CreateOrderHandler(orderRepository);
@@ -70,6 +78,9 @@ app.get('/health/ready', async (_req: Request, res: Response) => {
   const statusCode = result.status === 'healthy' ? 200 : 503;
   res.status(statusCode).json(result);
 });
+
+// Rate limit the public API (not health/metrics probes).
+app.use('/api/v1', rateLimiter);
 
 // API routes
 app.use(registerRoutes(orderController, idempotency));
