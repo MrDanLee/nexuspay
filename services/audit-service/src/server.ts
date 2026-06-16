@@ -1,26 +1,49 @@
-import { app } from './app';
+import { app, logger } from './app';
+import { config } from './config';
+import { closeDatabase } from './infrastructure/database/connection';
+import { startMessaging, MessagingHandle } from './interfaces/messaging/startMessaging';
 
-const PORT = process.env.PORT ?? 3005;
 const SERVICE_NAME = 'audit-service';
 
-const server = app.listen(PORT, () => {
-  // eslint-disable-next-line no-console
-  console.log(`[${SERVICE_NAME}] Server running on port ${PORT}`);
+let messaging: MessagingHandle | null = null;
+
+const server = app.listen(config.PORT, () => {
+  logger.info({ port: config.PORT }, `${SERVICE_NAME} running`);
+
+  startMessaging()
+    .then((handle) => {
+      messaging = handle;
+    })
+    .catch((error) => {
+      logger.error({ err: error }, 'Failed to start messaging; will rely on next restart');
+    });
 });
 
-const shutdown = (signal: string): void => {
-  // eslint-disable-next-line no-console
-  console.log(`[${SERVICE_NAME}] Received ${signal}. Starting graceful shutdown...`);
+const shutdown = async (signal: string): Promise<void> => {
+  logger.info({ signal }, 'Starting graceful shutdown...');
 
-  server.close(() => {
-    // eslint-disable-next-line no-console
-    console.log(`[${SERVICE_NAME}] HTTP server closed`);
+  if (messaging) {
+    try {
+      await messaging.stop();
+      logger.info('Messaging stopped');
+    } catch (error) {
+      logger.error({ err: error }, 'Error stopping messaging');
+    }
+  }
+
+  server.close(async () => {
+    logger.info('HTTP server closed');
+    try {
+      await closeDatabase();
+      logger.info('Database connection closed');
+    } catch (error) {
+      logger.error({ err: error }, 'Error closing database connection');
+    }
     process.exit(0);
   });
 
   setTimeout(() => {
-    // eslint-disable-next-line no-console
-    console.error(`[${SERVICE_NAME}] Forced shutdown after timeout`);
+    logger.error('Forced shutdown after timeout');
     process.exit(1);
   }, 10_000);
 };
@@ -29,8 +52,7 @@ process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('SIGINT', () => shutdown('SIGINT'));
 
 process.on('unhandledRejection', (reason: unknown) => {
-  // eslint-disable-next-line no-console
-  console.error(`[${SERVICE_NAME}] Unhandled rejection:`, reason);
+  logger.error({ err: reason }, 'Unhandled rejection');
   process.exit(1);
 });
 
