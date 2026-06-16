@@ -19,6 +19,7 @@ export function createOrderRoutes(
 
   router.post('/', idempotency, controller.createOrder);
   router.get('/', controller.listOrders);
+  router.get('/:id/timeline', controller.getTimeline);
   router.get('/:id', controller.getOrder);
   router.post('/:id/cancel', idempotency, controller.cancelOrder);
 

@@ -5,6 +5,7 @@ import { CreateOrderHandler } from '../../../application/handlers/CreateOrderHan
 import { CancelOrderHandler } from '../../../application/handlers/CancelOrderHandler';
 import { GetOrderHandler } from '../../../application/queries/GetOrderQuery';
 import { ListOrdersHandler } from '../../../application/queries/ListOrdersQuery';
+import { GetTimelineHandler } from '../../../application/queries/GetTimelineQuery';
 import {
   createOrderSchema,
   listOrdersSchema,
@@ -28,6 +29,7 @@ export class OrderController {
     private readonly cancelOrderHandler: CancelOrderHandler,
     private readonly getOrderHandler: GetOrderHandler,
     private readonly listOrdersHandler: ListOrdersHandler,
+    private readonly getTimelineHandler?: GetTimelineHandler,
   ) { }
 
   /**
@@ -131,6 +133,30 @@ export class OrderController {
       });
 
       res.json(this.formatOrderResponse(order));
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * GET /api/v1/orders/:id/timeline
+   */
+  getTimeline = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      if (!this.getTimelineHandler) {
+        next();
+        return;
+      }
+
+      const params = orderIdParamSchema.safeParse(req.params);
+      if (!params.success) {
+        throw new ValidationError('Invalid order ID');
+      }
+
+      const customerId = (req as Request & { userId?: string }).userId ?? 'anonymous';
+      const timeline = await this.getTimelineHandler.execute(params.data.id, customerId);
+
+      res.json(timeline);
     } catch (error) {
       next(error);
     }

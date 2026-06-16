@@ -18,10 +18,12 @@ import {
 import { config } from './config';
 import { getDatabase, checkDatabaseHealth } from './infrastructure/database/connection';
 import { KnexOrderRepository } from './infrastructure/repositories/KnexOrderRepository';
+import { KnexSagaStepRepository } from './infrastructure/repositories/KnexSagaStepRepository';
 import { CreateOrderHandler } from './application/handlers/CreateOrderHandler';
 import { CancelOrderHandler } from './application/handlers/CancelOrderHandler';
 import { GetOrderHandler } from './application/queries/GetOrderQuery';
 import { ListOrdersHandler } from './application/queries/ListOrdersQuery';
+import { GetTimelineHandler } from './application/queries/GetTimelineQuery';
 import { OrderController } from './interfaces/http/controllers/OrderController';
 import { registerRoutes } from './interfaces/http/routes';
 
@@ -45,6 +47,8 @@ const createOrderHandler = new CreateOrderHandler(orderRepository);
 const cancelOrderHandler = new CancelOrderHandler(orderRepository);
 const getOrderHandler = new GetOrderHandler(orderRepository);
 const listOrdersHandler = new ListOrdersHandler(orderRepository);
+const sagaStepRepository = new KnexSagaStepRepository(db);
+const getTimelineHandler = new GetTimelineHandler(orderRepository, sagaStepRepository);
 
 // ─── Controller ─────────────────────────────────
 const orderController = new OrderController(
@@ -52,6 +56,7 @@ const orderController = new OrderController(
   cancelOrderHandler,
   getOrderHandler,
   listOrdersHandler,
+  getTimelineHandler,
 );
 
 // ─── Health Checker ─────────────────────────────
