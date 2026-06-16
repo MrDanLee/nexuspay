@@ -28,6 +28,9 @@ export class OrderEventHandlers {
       case EventType.PAYMENT_FAILED:
         await this.onPaymentFailed(event);
         break;
+      case EventType.INVENTORY_FAILED:
+        await this.onInventoryFailed(event);
+        break;
       default:
         logger.debug({ type: event.type }, 'Ignoring event');
     }
@@ -91,5 +94,30 @@ export class OrderEventHandlers {
     order.cancel();
     await this.orderRepository.update(order, [orderCancelledEvent(order, 'payment failed')]);
     logger.info({ orderId }, 'Order cancelled after payment failure, emitted order.cancelled');
+  }
+
+  private async onInventoryFailed(event: DomainEvent): Promise<void> {
+    const { orderId } = event.data as { orderId: string };
+    const order = await this.orderRepository.findById(orderId);
+    if (!order) return;
+
+    if (order.status === OrderStatus.CANCELLED) {
+      logger.debug({ orderId }, 'inventory.failed already applied');
+      return;
+    }
+
+    if (order.status === OrderStatus.CREATED) {
+      order.transitionTo(OrderStatus.INVENTORY_FAILED);
+    }
+
+    if (!order.isCancellable()) {
+      logger.warn({ orderId, status: order.status }, 'inventory.failed for non-cancellable order');
+      return;
+    }
+
+    // Nothing was reserved, so no compensation event is emitted.
+    order.cancel();
+    await this.orderRepository.update(order);
+    logger.info({ orderId }, 'Order cancelled after inventory failure');
   }
 }
