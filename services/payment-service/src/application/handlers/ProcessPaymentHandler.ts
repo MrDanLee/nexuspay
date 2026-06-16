@@ -10,6 +10,7 @@ import {
   CircuitBreaker,
   CircuitOpenError,
 } from '../../infrastructure/resilience/CircuitBreaker';
+import { PaymentMetrics } from '../../infrastructure/observability/PaymentMetrics';
 import { PaymentRepository } from '../ports/PaymentRepository';
 import { ProcessPaymentCommand } from '../commands/ProcessPaymentCommand';
 
@@ -41,6 +42,7 @@ export class ProcessPaymentHandler {
     private readonly gateway: PaymentGatewayClient,
     private readonly circuitBreaker: CircuitBreaker,
     private readonly retryConfig: RetryConfig = { maxAttempts: 3, baseDelayMs: 100 },
+    private readonly metrics?: PaymentMetrics,
   ) {}
 
   async execute(command: ProcessPaymentCommand): Promise<ProcessPaymentResult> {
@@ -89,6 +91,7 @@ export class ProcessPaymentHandler {
 
       payment.markCompleted(result.transactionId);
       payment = await this.paymentRepository.update(payment);
+      this.metrics?.recordPaymentResult(true);
       logger.info({ orderId: command.orderId, paymentId: payment.id }, 'Payment completed');
       return { payment, success: true };
     } catch (error) {
@@ -101,6 +104,7 @@ export class ProcessPaymentHandler {
 
       payment.markFailed(reason);
       payment = await this.paymentRepository.update(payment);
+      this.metrics?.recordPaymentResult(false);
       logger.warn({ orderId: command.orderId, paymentId: payment.id, reason }, 'Payment failed');
       return { payment, success: false };
     }
