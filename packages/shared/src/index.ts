@@ -49,6 +49,15 @@ export type { RetryOptions, RetryAttemptInfo } from './resilience/retry';
 // Observability
 export { createLogger, childLogger } from './observability/logger';
 export type { Logger, LogContext } from './observability/logger';
+export {
+  Counter,
+  Gauge,
+  Histogram,
+  MetricsRegistry,
+  defaultRegistry,
+  DEFAULT_BUCKETS,
+} from './observability/metrics';
+export type { Labels } from './observability/metrics';
 
 // Middleware
 export { requestIdMiddleware } from './middleware/requestId';
