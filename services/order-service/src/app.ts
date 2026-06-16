@@ -7,9 +7,12 @@ import {
   requestIdMiddleware,
   requestLoggerMiddleware,
   errorHandlerMiddleware,
+  idempotencyMiddleware,
   HealthChecker,
+  RedisClient,
 } from '@nexuspay/shared';
 
+import { config } from './config';
 import { getDatabase, checkDatabaseHealth } from './infrastructure/database/connection';
 import { KnexOrderRepository } from './infrastructure/repositories/KnexOrderRepository';
 import { CreateOrderHandler } from './application/handlers/CreateOrderHandler';
@@ -25,6 +28,8 @@ const logger = createLogger({ service: 'order-service' });
 // ─── Dependencies ───────────────────────────────
 const db = getDatabase();
 const orderRepository = new KnexOrderRepository(db);
+const redis = new RedisClient(config.REDIS_URL, logger);
+const idempotency = idempotencyMiddleware(redis);
 
 // ─── Application Handlers ───────────────────────
 const createOrderHandler = new CreateOrderHandler(orderRepository);
@@ -67,7 +72,7 @@ app.get('/health/ready', async (_req: Request, res: Response) => {
 });
 
 // API routes
-app.use(registerRoutes(orderController));
+app.use(registerRoutes(orderController, idempotency));
 
 // Error handler (must be last)
 app.use(errorHandlerMiddleware(logger));
