@@ -11,6 +11,9 @@ import {
   rateLimiterMiddleware,
   RedisSlidingWindowStore,
   authMiddleware,
+  httpMetricsMiddleware,
+  defaultRegistry,
+  MetricsRegistry,
   HealthChecker,
   RedisClient,
 } from '@nexuspay/shared';
@@ -73,6 +76,7 @@ app.use(express.json({ limit: '10kb' }));
 app.use(sanitizeMiddleware());
 app.use(requestIdMiddleware());
 app.use(requestLoggerMiddleware(logger));
+app.use(httpMetricsMiddleware());
 
 // Health checks
 app.get('/health/live', (_req: Request, res: Response) => {
@@ -83,6 +87,11 @@ app.get('/health/ready', async (_req: Request, res: Response) => {
   const result = await healthChecker.check();
   const statusCode = result.status === 'healthy' ? 200 : 503;
   res.status(statusCode).json(result);
+});
+
+// Prometheus scrape endpoint (text exposition format)
+app.get('/metrics', (_req: Request, res: Response) => {
+  res.set('Content-Type', MetricsRegistry.CONTENT_TYPE).send(defaultRegistry.render());
 });
 
 // Authenticate the public API, then rate limit (so limits are per-user).
