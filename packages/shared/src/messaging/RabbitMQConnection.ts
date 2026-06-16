@@ -12,6 +12,7 @@ export class RabbitMQConnection {
   private connection: amqp.ChannelModel | null = null;
   private channel: amqp.Channel | null = null;
   private reconnecting = false;
+  private reconnectAttempts = 0;
   private readonly reconnectDelay = 5000;
 
   constructor(
@@ -19,12 +20,22 @@ export class RabbitMQConnection {
     private readonly logger: Logger,
   ) { }
 
+  /** Host:port from the AMQP URL, for actionable logs without leaking credentials. */
+  private get endpoint(): string {
+    try {
+      const url = new URL(this.url);
+      return `${url.hostname}:${url.port || '5672'}`;
+    } catch {
+      return 'unknown';
+    }
+  }
+
   /**
    * Establish connection and create a channel.
    */
   async connect(): Promise<void> {
     try {
-      this.logger.info('Connecting to RabbitMQ...');
+      this.logger.info({ endpoint: this.endpoint }, 'Connecting to RabbitMQ...');
 
       this.connection = await amqp.connect(this.url);
       this.channel = await this.connection.createChannel();
@@ -32,7 +43,8 @@ export class RabbitMQConnection {
       // Prefetch 1 message at a time for fair dispatch
       await this.channel.prefetch(1);
 
-      this.logger.info('Connected to RabbitMQ');
+      this.reconnectAttempts = 0;
+      this.logger.info({ endpoint: this.endpoint }, 'Connected to RabbitMQ');
 
       // Handle connection errors
       this.connection.on('error', (err: Error) => {
@@ -45,7 +57,10 @@ export class RabbitMQConnection {
         this.handleDisconnect();
       });
     } catch (error) {
-      this.logger.error({ err: error }, 'Failed to connect to RabbitMQ');
+      this.logger.error(
+        { err: error, endpoint: this.endpoint },
+        `Failed to connect to RabbitMQ at ${this.endpoint}. Is the broker running and reachable?`,
+      );
       throw error;
     }
   }
@@ -95,10 +110,11 @@ export class RabbitMQConnection {
 
     if (this.reconnecting) return;
     this.reconnecting = true;
+    this.reconnectAttempts += 1;
 
-    this.logger.info(
-      { delay: this.reconnectDelay },
-      'Scheduling RabbitMQ reconnection...',
+    this.logger.warn(
+      { delayMs: this.reconnectDelay, attempt: this.reconnectAttempts, endpoint: this.endpoint },
+      `RabbitMQ disconnected; reconnect attempt ${this.reconnectAttempts} in ${this.reconnectDelay}ms`,
     );
 
     setTimeout(async () => {

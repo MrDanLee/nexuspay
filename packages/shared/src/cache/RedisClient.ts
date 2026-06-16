@@ -10,6 +10,7 @@ import { Logger } from 'pino';
 export class RedisClient {
   private client: Redis;
   private readonly logger: Logger;
+  private loggedError = false;
 
   constructor(url: string, logger: Logger) {
     this.logger = logger;
@@ -23,11 +24,21 @@ export class RedisClient {
     });
 
     this.client.on('connect', () => {
+      this.loggedError = false;
       this.logger.info('Connected to Redis');
     });
 
+    // Redis emits 'error' on every retry tick; log only the first one in a
+    // failure streak to avoid flooding the logs, and at warn level since
+    // callers (idempotency, rate limiter) fail open when Redis is down.
     this.client.on('error', (err) => {
-      this.logger.error({ err }, 'Redis connection error');
+      if (!this.loggedError) {
+        this.loggedError = true;
+        this.logger.warn(
+          { err },
+          'Redis unavailable; features backed by Redis will fall back gracefully',
+        );
+      }
     });
 
     this.client.on('reconnecting', () => {
