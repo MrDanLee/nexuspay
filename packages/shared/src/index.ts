@@ -42,6 +42,10 @@ export type {
 // Domain
 export { Money } from './domain/Money';
 
+// Resilience
+export { retry } from './resilience/retry';
+export type { RetryOptions, RetryAttemptInfo } from './resilience/retry';
+
 // Observability
 export { createLogger, childLogger } from './observability/logger';
 export type { Logger, LogContext } from './observability/logger';
