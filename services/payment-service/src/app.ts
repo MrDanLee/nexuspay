@@ -1,8 +1,7 @@
 import express, { Request, Response } from 'express';
-import helmet from 'helmet';
-import cors from 'cors';
 import compression from 'compression';
 import {
+  securityHeaders,
   createLogger,
   requestIdMiddleware,
   requestLoggerMiddleware,
@@ -90,8 +89,7 @@ healthChecker.register('database', checkDatabaseHealth);
 // ─── Express App ────────────────────────────────
 const app = express();
 
-app.use(helmet());
-app.use(cors());
+app.use(securityHeaders());
 app.use(compression());
 app.use(requestIdMiddleware());
 app.use(requestLoggerMiddleware(logger));

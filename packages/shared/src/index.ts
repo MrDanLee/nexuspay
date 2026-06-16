@@ -56,6 +56,8 @@ export { requestLoggerMiddleware } from './middleware/requestLogger';
 export { errorHandlerMiddleware } from './middleware/errorHandler';
 export { idempotencyMiddleware } from './middleware/idempotency';
 export type { IdempotencyStore, IdempotencyOptions } from './middleware/idempotency';
+export { securityHeaders } from './middleware/security';
+export type { SecurityOptions } from './middleware/security';
 export { authMiddleware, requireRole } from './middleware/auth';
 export type { AuthUser, AuthOptions, AuthenticatedRequest } from './middleware/auth';
 export { rateLimiterMiddleware, RedisSlidingWindowStore } from './middleware/rateLimiter';
