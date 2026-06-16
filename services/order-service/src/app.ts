@@ -10,7 +10,6 @@ import {
   HealthChecker,
 } from '@nexuspay/shared';
 
-import { config } from './config';
 import { getDatabase, checkDatabaseHealth } from './infrastructure/database/connection';
 import { KnexOrderRepository } from './infrastructure/repositories/KnexOrderRepository';
 import { CreateOrderHandler } from './application/handlers/CreateOrderHandler';
@@ -73,4 +72,4 @@ app.use('/api/v1/orders', createOrderRoutes(orderController));
 // Error handler (must be last)
 app.use(errorHandlerMiddleware(logger));
 
-export { app };
+export { app }; 

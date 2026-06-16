@@ -1,5 +1,5 @@
 import { Knex } from 'knex';
-import { ConflictError, NotFoundError, Money } from '@nexuspay/shared';
+import { ConflictError, Money } from '@nexuspay/shared';
 
 import { Order } from '../../domain/entities/Order';
 import { OrderStatus } from '../../domain/value-objects/OrderStatus';
@@ -54,11 +54,16 @@ export class KnexOrderRepository implements OrderRepository {
           total_amount: order.totalAmount.toFixed(),
           currency: order.currency,
           idempotency_key: order.idempotencyKey,
-          shipping_address: JSON.stringify(order.shippingAddress),
-          metadata: JSON.stringify(order.metadata),
+          // Knex serializes objects to jsonb automatically.
+          shipping_address: order.shippingAddress,
+          metadata: order.metadata,
           version: order.version,
         })
         .returning('*');
+
+      if (!row) {
+        throw new Error('Failed to insert order: no row returned');
+      }
 
       // Insert order items
       if (order.items.length > 0) {
@@ -121,11 +126,12 @@ export class KnexOrderRepository implements OrderRepository {
         total_amount: order.totalAmount.toFixed(),
         updated_at: new Date(),
         version: order.version,
-        metadata: JSON.stringify(order.metadata),
+        metadata: order.metadata,
       })
       .returning('*');
 
-    if (updated.length === 0) {
+    const updatedRow = updated[0];
+    if (!updatedRow) {
       throw new ConflictError(
         `Order ${order.id} was modified by another process (version conflict)`,
         { metadata: { orderId: order.id, expectedVersion: order.version - 1 } },
@@ -135,7 +141,7 @@ export class KnexOrderRepository implements OrderRepository {
     const items = await this.db<OrderItemRow>('order_items')
       .where({ order_id: order.id });
 
-    return this.toDomain(updated[0], items);
+    return this.toDomain(updatedRow, items);
   }
 
   async findByCustomerId(
@@ -150,7 +156,7 @@ export class KnexOrderRepository implements OrderRepository {
       .limit(limit + 1); // Fetch one extra to determine hasMore
 
     if (status) {
-      query = query.where({ status });
+      query = query.where('status', status);
     }
 
     if (cursor) {
@@ -173,9 +179,10 @@ export class KnexOrderRepository implements OrderRepository {
       return this.toDomain(row, items);
     });
 
-    const nextCursor = hasMore && data.length > 0
+    const lastRow = data[data.length - 1];
+    const nextCursor = hasMore && lastRow
       ? Buffer.from(
-        JSON.stringify({ createdAt: data[data.length - 1].created_at }),
+        JSON.stringify({ createdAt: lastRow.created_at }),
       ).toString('base64')
       : undefined;
 
