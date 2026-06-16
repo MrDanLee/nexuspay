@@ -62,6 +62,8 @@ export type { HealthCheckResult, HealthStatus, DependencyCheck } from './health/
 // Messaging
 export { RabbitMQConnection } from './messaging/RabbitMQConnection';
 export { Publisher } from './messaging/Publisher';
+export { Consumer } from './messaging/Consumer';
+export type { EventHandler } from './messaging/Consumer';
 
 // Cache
 export { RedisClient } from './cache/RedisClient';
