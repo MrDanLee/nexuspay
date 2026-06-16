@@ -68,6 +68,8 @@ export type { IdempotencyStore, IdempotencyOptions } from './middleware/idempote
 export { securityHeaders } from './middleware/security';
 export type { SecurityOptions } from './middleware/security';
 export { sanitizeMiddleware } from './middleware/sanitize';
+export { httpMetricsMiddleware } from './middleware/httpMetrics';
+export type { HttpMetricsOptions } from './middleware/httpMetrics';
 export { authMiddleware, requireRole } from './middleware/auth';
 export type { AuthUser, AuthOptions, AuthenticatedRequest } from './middleware/auth';
 export { rateLimiterMiddleware, RedisSlidingWindowStore } from './middleware/rateLimiter';
