@@ -3,6 +3,7 @@ import { NotFoundError, createLogger } from '@nexuspay/shared';
 import { Order } from '../../domain/entities/Order';
 import { OrderRepository } from '../ports/OrderRepository';
 import { CancelOrderCommand } from '../commands/CancelOrderCommand';
+import { orderCancelledEvent } from '../events/orderEvents';
 
 const logger = createLogger({ service: 'order-service', handler: 'CancelOrderHandler' });
 
@@ -35,7 +36,11 @@ export class CancelOrderHandler {
     // Domain entity validates the transition
     order.cancel();
 
-    const updated = await this.orderRepository.update(order);
+    // Persist the cancellation and emit OrderCancelled atomically (outbox).
+    const reason = command.reason ?? 'cancelled by customer';
+    const updated = await this.orderRepository.update(order, [
+      orderCancelledEvent(order, reason),
+    ]);
 
     logger.info(
       {
