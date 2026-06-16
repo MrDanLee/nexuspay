@@ -56,6 +56,12 @@ export { requestLoggerMiddleware } from './middleware/requestLogger';
 export { errorHandlerMiddleware } from './middleware/errorHandler';
 export { idempotencyMiddleware } from './middleware/idempotency';
 export type { IdempotencyStore, IdempotencyOptions } from './middleware/idempotency';
+export { rateLimiterMiddleware, RedisSlidingWindowStore } from './middleware/rateLimiter';
+export type {
+  RateLimiterStore,
+  RateLimiterOptions,
+  RateLimitResult,
+} from './middleware/rateLimiter';
 
 // Health
 export { HealthChecker } from './health/HealthChecker';
