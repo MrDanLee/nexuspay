@@ -17,7 +17,7 @@ import { CancelOrderHandler } from './application/handlers/CancelOrderHandler';
 import { GetOrderHandler } from './application/queries/GetOrderQuery';
 import { ListOrdersHandler } from './application/queries/ListOrdersQuery';
 import { OrderController } from './interfaces/http/controllers/OrderController';
-import { createOrderRoutes } from './interfaces/http/routes/orderRoutes';
+import { registerRoutes } from './interfaces/http/routes';
 
 // ─── Logger ─────────────────────────────────────
 const logger = createLogger({ service: 'order-service' });
@@ -67,7 +67,7 @@ app.get('/health/ready', async (_req: Request, res: Response) => {
 });
 
 // API routes
-app.use('/api/v1/orders', createOrderRoutes(orderController));
+app.use(registerRoutes(orderController));
 
 // Error handler (must be last)
 app.use(errorHandlerMiddleware(logger));
