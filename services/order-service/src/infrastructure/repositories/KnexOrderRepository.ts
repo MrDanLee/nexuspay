@@ -110,6 +110,7 @@ export class KnexOrderRepository implements OrderRepository {
         aggregate_id: event.aggregateId,
         event_type: event.eventType,
         payload: event.payload,
+        metadata: event.metadata ?? null,
       })),
     );
   }

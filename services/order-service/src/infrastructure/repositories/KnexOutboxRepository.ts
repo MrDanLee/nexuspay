@@ -11,6 +11,7 @@ interface OutboxRow {
   aggregate_id: string;
   event_type: string;
   payload: Record<string, unknown>;
+  metadata: Record<string, unknown> | null;
   published: boolean;
   created_at: Date;
   published_at: Date | null;
@@ -39,6 +40,7 @@ export class KnexOutboxRepository implements OutboxRepository {
       aggregateId: row.aggregate_id,
       eventType: row.event_type,
       payload: row.payload,
+      metadata: row.metadata ?? undefined,
       createdAt: new Date(row.created_at),
     }));
   }

@@ -83,6 +83,8 @@ export class OutboxPoller {
   }
 
   private toDomainEvent(record: OutboxRecord): DomainEvent {
+    const traceparent =
+      typeof record.metadata?.traceparent === 'string' ? record.metadata.traceparent : undefined;
     return {
       id: record.id,
       type: record.eventType as DomainEvent['type'],
@@ -91,7 +93,7 @@ export class OutboxPoller {
       correlationId: record.aggregateId,
       causationId: record.id,
       data: record.payload,
-      metadata: { version: 1 },
+      metadata: { version: 1, traceparent },
     };
   }
 }

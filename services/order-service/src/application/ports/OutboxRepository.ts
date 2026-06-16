@@ -7,6 +7,8 @@ export interface OutboxEventInput {
   aggregateId: string;
   eventType: string;
   payload: Record<string, unknown>;
+  /** Out-of-band context (e.g. traceparent) carried with the event. */
+  metadata?: Record<string, unknown>;
 }
 
 export interface OutboxRecord extends OutboxEventInput {

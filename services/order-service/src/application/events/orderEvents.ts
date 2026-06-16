@@ -3,10 +3,27 @@ import {
   OrderCreatedPayload,
   OrderCancelledPayload,
   OrderConfirmedPayload,
+  RequestContext,
+  formatTraceparent,
 } from '@nexuspay/shared';
 
 import { Order } from '../../domain/entities/Order';
 import { OutboxEventInput } from '../ports/OutboxRepository';
+
+/**
+ * Capture the active trace as a traceparent so the outbox poller — which runs
+ * outside any request — can still relay the originating trace across the
+ * broker. Returns undefined when there is no active trace context.
+ */
+function traceMetadata(): Record<string, unknown> | undefined {
+  const ctx = RequestContext.get();
+  if (ctx?.traceId && ctx.spanId) {
+    return {
+      traceparent: formatTraceparent({ traceId: ctx.traceId, spanId: ctx.spanId, sampled: true }),
+    };
+  }
+  return undefined;
+}
 
 /**
  * Builders that turn an Order aggregate into an outbox event. Centralizing
@@ -31,6 +48,7 @@ export function orderCreatedEvent(order: Order): OutboxEventInput {
     aggregateId: order.id,
     eventType: EventType.ORDER_CREATED,
     payload: { ...payload },
+    metadata: traceMetadata(),
   };
 }
 
@@ -45,6 +63,7 @@ export function orderCancelledEvent(order: Order, reason: string): OutboxEventIn
     aggregateId: order.id,
     eventType: EventType.ORDER_CANCELLED,
     payload: { ...payload },
+    metadata: traceMetadata(),
   };
 }
 
@@ -60,5 +79,6 @@ export function orderConfirmedEvent(order: Order): OutboxEventInput {
     aggregateId: order.id,
     eventType: EventType.ORDER_CONFIRMED,
     payload: { ...payload },
+    metadata: traceMetadata(),
   };
 }
