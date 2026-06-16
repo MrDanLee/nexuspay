@@ -107,6 +107,50 @@ npm run dev
 | RabbitMQ Management | 15672 | http://localhost:15672 (nexuspay/nexuspay_dev) |
 | Redis | 6379 | `redis-cli` |
 
+## Observability
+
+NexusPay emits Prometheus metrics, structured logs, and distributed-trace
+context out of the box.
+
+### Metrics
+
+Each service exposes a Prometheus scrape endpoint at `/metrics`:
+
+- **RED metrics** (every request) — `http_requests_total`,
+  `http_request_duration_seconds` (histogram), `http_active_requests`. The
+  `route` label uses the matched Express route pattern (e.g.
+  `/api/v1/orders/:id`) to keep cardinality bounded.
+- **Business metrics** — `orders_created_total`, `orders_confirmed_total`,
+  `orders_cancelled_total` (by reason); `payment_succeeded_total`,
+  `payment_failed_total`, `payment_circuit_breaker_state`.
+
+### Tracing
+
+Every request derives a [W3C Trace Context](https://www.w3.org/TR/trace-context/)
+from the inbound `traceparent` header (or starts a new trace), echoes it on the
+response, and includes `traceId`/`spanId` on every log line. The trace is
+carried across RabbitMQ via the `traceparent` message header — including events
+relayed by the order outbox — so a single trace spans the whole saga.
+
+### Running the monitoring stack
+
+The monitoring stack runs independently of the application infrastructure:
+
+```bash
+docker compose -f docker-compose.observability.yml up -d
+```
+
+| Tool | Port | Access |
+|------|------|--------|
+| Prometheus | 9090 | http://localhost:9090 |
+| Grafana | 3000 | http://localhost:3000 (admin/admin) |
+| Jaeger UI | 16686 | http://localhost:16686 |
+
+Grafana auto-provisions the Prometheus datasource and the **NexusPay — Overview**
+dashboard (request/error rates, latency percentiles, order and payment rates,
+circuit-breaker state). Prometheus loads alert rules for high error rate, high
+p95 latency, and an open payment circuit breaker.
+
 ## Project Structure
 ```
 nexuspay/
