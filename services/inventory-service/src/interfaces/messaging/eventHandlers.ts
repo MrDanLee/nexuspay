@@ -46,13 +46,23 @@ export class InventoryEventHandlers {
   };
 
   private async onOrderCreated(event: DomainEvent): Promise<void> {
-    const data = event.data as { orderId: string; items: OrderItemPayload[] };
+    const data = event.data as {
+      orderId: string;
+      customerId?: string;
+      totalAmount?: number;
+      currency?: string;
+      items: OrderItemPayload[];
+    };
     const items = data.items.map((item) => ({ sku: item.sku, quantity: item.quantity }));
 
     try {
       const result = await this.reserveStockHandler.execute({ orderId: data.orderId, items });
+      // Forward the order context so the payment step has the amount.
       await this.publish(EventType.INVENTORY_RESERVED, event, {
         orderId: data.orderId,
+        customerId: data.customerId,
+        totalAmount: data.totalAmount,
+        currency: data.currency,
         reservations: result.reservations,
       });
       logger.info({ orderId: data.orderId }, 'Stock reserved, emitted inventory.reserved');
