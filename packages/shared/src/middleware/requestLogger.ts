@@ -18,6 +18,8 @@ export function requestLoggerMiddleware(logger: Logger) {
     const reqLogger = logger.child({
       requestId: ctx?.requestId,
       correlationId: ctx?.correlationId,
+      traceId: ctx?.traceId,
+      spanId: ctx?.spanId,
     });
 
     reqLogger.info(

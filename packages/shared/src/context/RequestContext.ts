@@ -5,6 +5,10 @@ export interface RequestContextData {
   correlationId: string;
   userId?: string;
   startTime: number;
+  /** W3C trace id (32 hex chars) for distributed tracing. */
+  traceId?: string;
+  /** W3C span id (16 hex chars) for the current hop. */
+  spanId?: string;
 }
 
 /**
@@ -56,6 +60,14 @@ export class RequestContext {
 
   static getUserId(): string | undefined {
     return this.get()?.userId;
+  }
+
+  static getTraceId(): string | undefined {
+    return this.get()?.traceId;
+  }
+
+  static getSpanId(): string | undefined {
+    return this.get()?.spanId;
   }
 
   /**
