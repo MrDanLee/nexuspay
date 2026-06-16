@@ -21,6 +21,10 @@ export const Queues = {
   PAYMENT_INVENTORY_EVENTS: 'payment.inventory-events',
   ORDER_PAYMENT_EVENTS: 'order.payment-events',
   ORDER_INVENTORY_EVENTS: 'order.inventory-events',
+  /** Notification reacts to a few customer-facing lifecycle events. */
+  NOTIFICATION_EVENTS: 'notification.events',
+  /** Audit captures every event from every exchange (append-only log). */
+  AUDIT_EVENTS: 'audit.events',
   DEAD_LETTER: 'nexuspay.dlq',
 } as const;
 
@@ -83,4 +87,16 @@ export async function setupTopology(channel: Channel): Promise<void> {
     Exchanges.INVENTORY,
     EventType.INVENTORY_FAILED,
   );
+
+  // Notification reacts to a handful of customer-facing outcomes.
+  await channel.assertQueue(Queues.NOTIFICATION_EVENTS, queueOptions);
+  await channel.bindQueue(Queues.NOTIFICATION_EVENTS, Exchanges.ORDER, EventType.ORDER_CONFIRMED);
+  await channel.bindQueue(Queues.NOTIFICATION_EVENTS, Exchanges.ORDER, EventType.ORDER_CANCELLED);
+  await channel.bindQueue(Queues.NOTIFICATION_EVENTS, Exchanges.PAYMENT, EventType.PAYMENT_FAILED);
+
+  // Audit captures everything: bind to all aggregate exchanges with '#'.
+  await channel.assertQueue(Queues.AUDIT_EVENTS, queueOptions);
+  await channel.bindQueue(Queues.AUDIT_EVENTS, Exchanges.ORDER, '#');
+  await channel.bindQueue(Queues.AUDIT_EVENTS, Exchanges.INVENTORY, '#');
+  await channel.bindQueue(Queues.AUDIT_EVENTS, Exchanges.PAYMENT, '#');
 }
