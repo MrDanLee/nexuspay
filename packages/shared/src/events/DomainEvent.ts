@@ -37,6 +37,13 @@ export interface EventMetadata {
 
   /** User who triggered the action (if applicable) */
   userId?: string;
+
+  /**
+   * W3C traceparent captured when the event was produced. Lets an event
+   * published outside a request (e.g. by the outbox poller) still carry the
+   * originating trace across the broker.
+   */
+  traceparent?: string;
 }
 
 /**
