@@ -8,6 +8,7 @@ import {
 } from '@nexuspay/shared';
 
 import { ReserveStockHandler } from '../../application/handlers/ReserveStockHandler';
+import { ReleaseStockHandler } from '../../application/handlers/ReleaseStockHandler';
 
 const logger = createLogger({ service: 'inventory-service', component: 'eventHandlers' });
 
@@ -27,6 +28,7 @@ interface OrderItemPayload {
 export class InventoryEventHandlers {
   constructor(
     private readonly reserveStockHandler: ReserveStockHandler,
+    private readonly releaseStockHandler: ReleaseStockHandler,
     private readonly publisher: Publisher,
   ) {}
 
@@ -34,6 +36,9 @@ export class InventoryEventHandlers {
     switch (event.type) {
       case EventType.ORDER_CREATED:
         await this.onOrderCreated(event);
+        break;
+      case EventType.ORDER_CANCELLED:
+        await this.onOrderCancelled(event);
         break;
       default:
         logger.debug({ type: event.type }, 'Ignoring event');
@@ -58,6 +63,21 @@ export class InventoryEventHandlers {
         reason,
       });
       logger.warn({ orderId: data.orderId, reason }, 'Reservation failed, emitted inventory.failed');
+    }
+  }
+
+  private async onOrderCancelled(event: DomainEvent): Promise<void> {
+    const data = event.data as { orderId: string };
+    const result = await this.releaseStockHandler.execute({ orderId: data.orderId });
+
+    if (result.releasedCount > 0) {
+      await this.publish(EventType.INVENTORY_RELEASED, event, { orderId: data.orderId });
+      logger.info(
+        { orderId: data.orderId, releasedCount: result.releasedCount },
+        'Stock released, emitted inventory.released',
+      );
+    } else {
+      logger.debug({ orderId: data.orderId }, 'No active reservations to release');
     }
   }
 
