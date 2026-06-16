@@ -4,6 +4,7 @@ import { Order } from '../../domain/entities/Order';
 import { OrderRepository } from '../ports/OrderRepository';
 import { CancelOrderCommand } from '../commands/CancelOrderCommand';
 import { orderCancelledEvent } from '../events/orderEvents';
+import { orderMetrics } from '../../infrastructure/observability/orderMetrics';
 
 const logger = createLogger({ service: 'order-service', handler: 'CancelOrderHandler' });
 
@@ -41,6 +42,7 @@ export class CancelOrderHandler {
     const updated = await this.orderRepository.update(order, [
       orderCancelledEvent(order, reason),
     ]);
+    orderMetrics.recordCancelled('customer');
 
     logger.info(
       {

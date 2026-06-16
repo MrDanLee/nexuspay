@@ -4,6 +4,7 @@ import { Order } from '../../domain/entities/Order';
 import { OrderRepository } from '../ports/OrderRepository';
 import { CreateOrderCommand } from '../commands/CreateOrderCommand';
 import { orderCreatedEvent } from '../events/orderEvents';
+import { orderMetrics } from '../../infrastructure/observability/orderMetrics';
 
 const logger = createLogger({ service: 'order-service', handler: 'CreateOrderHandler' });
 
@@ -53,6 +54,7 @@ export class CreateOrderHandler {
 
     // Persist the order and the OrderCreated event atomically (outbox).
     const saved = await this.orderRepository.save(order, [orderCreatedEvent(order)]);
+    orderMetrics.recordCreated();
 
     logger.info(
       {
