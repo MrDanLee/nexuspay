@@ -72,4 +72,4 @@ app.use(registerRoutes(orderController));
 // Error handler (must be last)
 app.use(errorHandlerMiddleware(logger));
 
-export { app }; 
+export { app, orderRepository };

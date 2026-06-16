@@ -118,4 +118,4 @@ app.use(registerRoutes(paymentController));
 // Error handler (must be last)
 app.use(errorHandlerMiddleware(logger));
 
-export { app };
+export { app, processPaymentHandler };

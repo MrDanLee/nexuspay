@@ -76,4 +76,4 @@ app.use(registerRoutes(inventoryController));
 // Error handler (must be last)
 app.use(errorHandlerMiddleware(logger));
 
-export { app, reservationExpiryJob };
+export { app, reservationExpiryJob, reserveStockHandler, releaseStockHandler };

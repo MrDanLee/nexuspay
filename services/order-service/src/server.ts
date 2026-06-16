@@ -1,29 +1,56 @@
-import { app } from './app';
+import { createLogger } from '@nexuspay/shared';
 
-const PORT = process.env.PORT ?? 3001;
+import { app } from './app';
+import { config } from './config';
+import { closeDatabase } from './infrastructure/database/connection';
+import { startMessaging, MessagingHandle } from './interfaces/messaging/startMessaging';
+
+const logger = createLogger({ service: 'order-service' });
 const SERVICE_NAME = 'order-service';
 
-const server = app.listen(PORT, () => {
-  // eslint-disable-next-line no-console
-  console.log(`[${SERVICE_NAME}] Server running on port ${PORT}`);
+let messaging: MessagingHandle | null = null;
+
+const server = app.listen(config.PORT, () => {
+  logger.info({ port: config.PORT }, `${SERVICE_NAME} running`);
+
+  // Start messaging out-of-band; the HTTP service stays up even if the
+  // broker is temporarily unavailable (the outbox retries publishing).
+  startMessaging()
+    .then((handle) => {
+      messaging = handle;
+    })
+    .catch((error) => {
+      logger.error({ err: error }, 'Failed to start messaging; will rely on next restart');
+    });
 });
 
-// Graceful shutdown handler
-const shutdown = (signal: string): void => {
-  // eslint-disable-next-line no-console
-  console.log(`[${SERVICE_NAME}] Received ${signal}. Starting graceful shutdown...`);
+const shutdown = async (signal: string): Promise<void> => {
+  logger.info({ signal }, 'Starting graceful shutdown...');
 
-  server.close(() => {
-    // eslint-disable-next-line no-console
-    console.log(`[${SERVICE_NAME}] HTTP server closed`);
-    // Future: close DB connections, RabbitMQ channels, Redis client
+  if (messaging) {
+    try {
+      await messaging.stop();
+      logger.info('Messaging stopped');
+    } catch (error) {
+      logger.error({ err: error }, 'Error stopping messaging');
+    }
+  }
+
+  server.close(async () => {
+    logger.info('HTTP server closed');
+
+    try {
+      await closeDatabase();
+      logger.info('Database connection closed');
+    } catch (error) {
+      logger.error({ err: error }, 'Error closing database connection');
+    }
+
     process.exit(0);
   });
 
-  // Force shutdown after 10 seconds if graceful shutdown fails
   setTimeout(() => {
-    // eslint-disable-next-line no-console
-    console.error(`[${SERVICE_NAME}] Forced shutdown after timeout`);
+    logger.error('Forced shutdown after timeout');
     process.exit(1);
   }, 10_000);
 };
@@ -31,12 +58,8 @@ const shutdown = (signal: string): void => {
 process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('SIGINT', () => shutdown('SIGINT'));
 
-// Handle unhandled rejections
 process.on('unhandledRejection', (reason: unknown) => {
-  // eslint-disable-next-line no-console
-  console.error(`[${SERVICE_NAME}] Unhandled rejection:`, reason);
-  // In production, this should trigger an alert, not a crash
-  // But during development, crashing fast helps catch bugs
+  logger.error({ err: reason }, 'Unhandled rejection');
   process.exit(1);
 });
 

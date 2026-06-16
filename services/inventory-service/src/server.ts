@@ -3,19 +3,39 @@ import { createLogger } from '@nexuspay/shared';
 import { app, reservationExpiryJob } from './app';
 import { config } from './config';
 import { closeDatabase } from './infrastructure/database/connection';
+import { startMessaging, MessagingHandle } from './interfaces/messaging/startMessaging';
 
 const logger = createLogger({ service: 'inventory-service' });
 const SERVICE_NAME = 'inventory-service';
 
+let messaging: MessagingHandle | null = null;
+
 const server = app.listen(config.PORT, () => {
   logger.info({ port: config.PORT }, `${SERVICE_NAME} running`);
   reservationExpiryJob.start();
+
+  startMessaging()
+    .then((handle) => {
+      messaging = handle;
+    })
+    .catch((error) => {
+      logger.error({ err: error }, 'Failed to start messaging; will rely on next restart');
+    });
 });
 
 const shutdown = async (signal: string): Promise<void> => {
   logger.info({ signal }, 'Starting graceful shutdown...');
 
   reservationExpiryJob.stop();
+
+  if (messaging) {
+    try {
+      await messaging.stop();
+      logger.info('Messaging stopped');
+    } catch (error) {
+      logger.error({ err: error }, 'Error stopping messaging');
+    }
+  }
 
   server.close(async () => {
     logger.info('HTTP server closed');
