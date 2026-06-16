@@ -1,0 +1,43 @@
+# Alerting rules for NexusPay. These fire in the Prometheus UI; wiring an
+# Alertmanager for delivery is out of scope for local development.
+groups:
+  - name: nexuspay-http
+    rules:
+      - alert: HighErrorRate
+        # More than 5% of requests returning 5xx over 5 minutes.
+        expr: |
+          sum(rate(http_requests_total{status=~"5.."}[5m])) by (service)
+            /
+          sum(rate(http_requests_total[5m])) by (service)
+            > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'High 5xx error rate on {{ $labels.service }}'
+          description: '{{ $labels.service }} is serving more than 5% 5xx responses (current: {{ $value | humanizePercentage }}).'
+
+      - alert: HighRequestLatencyP95
+        # 95th percentile latency above 1s over 5 minutes.
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum(rate(http_request_duration_seconds_bucket[5m])) by (le, service)
+          ) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'High p95 latency on {{ $labels.service }}'
+          description: 'p95 request latency on {{ $labels.service }} is above 1s (current: {{ $value }}s).'
+
+  - name: nexuspay-payments
+    rules:
+      - alert: PaymentCircuitBreakerOpen
+        expr: payment_circuit_breaker_state == 2
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'Payment gateway circuit breaker is OPEN'
+          description: 'The payment service circuit breaker has tripped; gateway calls are being short-circuited.'
