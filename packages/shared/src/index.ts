@@ -54,6 +54,8 @@ export type { Logger, LogContext } from './observability/logger';
 export { requestIdMiddleware } from './middleware/requestId';
 export { requestLoggerMiddleware } from './middleware/requestLogger';
 export { errorHandlerMiddleware } from './middleware/errorHandler';
+export { idempotencyMiddleware } from './middleware/idempotency';
+export type { IdempotencyStore, IdempotencyOptions } from './middleware/idempotency';
 
 // Health
 export { HealthChecker } from './health/HealthChecker';
