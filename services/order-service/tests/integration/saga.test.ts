@@ -248,4 +248,21 @@ describeSaga('Order saga (end to end)', () => {
     const payment = await paymentDb('payments').where({ order_id: orderId }).first();
     expect(payment.status).toBe('FAILED');
   });
+
+  it('inventory failure: order is cancelled with no payment attempted', async () => {
+    gatewayFailureRate = 0;
+    await seedStock(0); // no stock available to reserve
+
+    const orderId = await placeOrder();
+    const order = await waitForStatus(orderId, OrderStatus.CANCELLED);
+
+    expect(order.status).toBe(OrderStatus.CANCELLED);
+
+    // No reservation happened and no payment was attempted (nothing to compensate).
+    const stock = await inventoryDb('inventory').where({ sku: PRODUCT.sku }).first();
+    expect(stock.reserved_qty).toBe(0);
+
+    const payment = await paymentDb('payments').where({ order_id: orderId }).first();
+    expect(payment).toBeUndefined();
+  });
 });
