@@ -53,7 +53,7 @@ export class OrderController {
         throw new ValidationError('Idempotency-Key header is required');
       }
 
-      // TODO: Extract from JWT auth middleware
+      // Populated by the JWT auth middleware (required on /api/v1).
       const customerId = (req as Request & { userId?: string }).userId ?? 'anonymous';
 
       const result = await this.createOrderHandler.execute({
