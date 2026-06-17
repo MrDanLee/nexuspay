@@ -1,7 +1,7 @@
 import { DomainEvent, Logger } from '@nexuspay/shared';
 
-import { NotificationDispatcher } from '../../application/NotificationDispatcher';
 import { ConsumeOnceGuard } from '../../application/ConsumeOnceGuard';
+import { NotificationDispatcher } from '../../application/NotificationDispatcher';
 
 /**
  * Consumes customer-facing domain events and dispatches notifications.

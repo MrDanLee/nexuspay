@@ -1,6 +1,6 @@
+import { ConfigLoader } from '@nexuspay/shared';
 import { z } from 'zod';
 
-import { ConfigLoader } from '@nexuspay/shared';
 
 const configSchema = z.object({
   // Server

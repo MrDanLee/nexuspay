@@ -1,10 +1,11 @@
 import { randomUUID } from 'node:crypto';
+
 import { Money, defaultRegistry } from '@nexuspay/shared';
 
-import { Order } from '../../../src/domain/entities/Order';
-import { OrderRepository } from '../../../src/application/ports/OrderRepository';
 import { CreateOrderCommand } from '../../../src/application/commands/CreateOrderCommand';
 import { CreateOrderHandler } from '../../../src/application/handlers/CreateOrderHandler';
+import { OrderRepository } from '../../../src/application/ports/OrderRepository';
+import { Order } from '../../../src/domain/entities/Order';
 
 // Grab the singleton counters from the shared registry (idempotent factory).
 const createdCounter = defaultRegistry.counter({

@@ -2,12 +2,12 @@ import express, { Request, Response } from 'express';
 import pino from 'pino';
 import supertest from 'supertest';
 
+import { errorHandlerMiddleware } from '../../../src/middleware/errorHandler';
 import {
   rateLimiterMiddleware,
   RateLimiterStore,
   RateLimitResult,
 } from '../../../src/middleware/rateLimiter';
-import { errorHandlerMiddleware } from '../../../src/middleware/errorHandler';
 import { requestIdMiddleware } from '../../../src/middleware/requestId';
 
 const logger = pino({ level: 'silent' });

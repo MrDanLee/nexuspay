@@ -1,8 +1,8 @@
 import express, { Request, Response } from 'express';
 import supertest from 'supertest';
 
-import { requestIdMiddleware } from '../../../src/middleware/requestId';
 import { RequestContext } from '../../../src/context/RequestContext';
+import { requestIdMiddleware } from '../../../src/middleware/requestId';
 import { parseTraceparent } from '../../../src/observability/trace';
 
 function createApp() {

@@ -1,10 +1,10 @@
-import knex, { Knex } from 'knex';
 import { ConflictError } from '@nexuspay/shared';
+import knex, { Knex } from 'knex';
 
-import { KnexInventoryRepository } from '../../src/infrastructure/repositories/KnexInventoryRepository';
 import { up as createProducts } from '../../src/infrastructure/database/migrations/001_create_products_table';
 import { up as createInventory } from '../../src/infrastructure/database/migrations/002_create_inventory_table';
 import { up as createReservations } from '../../src/infrastructure/database/migrations/003_create_reservations_table';
+import { KnexInventoryRepository } from '../../src/infrastructure/repositories/KnexInventoryRepository';
 
 /**
  * Concurrency tests for stock reservation against a real PostgreSQL

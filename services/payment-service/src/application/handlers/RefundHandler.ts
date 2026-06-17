@@ -12,9 +12,9 @@ import {
   PaymentGatewayClient,
   isRetryableGatewayError,
 } from '../../infrastructure/external/PaymentGatewayClient';
+import { RefundCommand } from '../commands/RefundCommand';
 import { PaymentRepository } from '../ports/PaymentRepository';
 import { RefundRepository, RefundRecord } from '../ports/RefundRepository';
-import { RefundCommand } from '../commands/RefundCommand';
 
 const logger = createLogger({ service: 'payment-service', handler: 'RefundHandler' });
 

@@ -2,13 +2,13 @@ import express, { Request, Response, NextFunction } from 'express';
 import pino from 'pino';
 import supertest from 'supertest';
 
-import { errorHandlerMiddleware } from '../../../src/middleware/errorHandler';
-import { requestIdMiddleware } from '../../../src/middleware/requestId';
 import {
   NotFoundError,
   ValidationError,
   ConflictError,
 } from '../../../src/errors/AppError';
+import { errorHandlerMiddleware } from '../../../src/middleware/errorHandler';
+import { requestIdMiddleware } from '../../../src/middleware/requestId';
 
 // Silent logger for tests
 const logger = pino({ level: 'silent' });

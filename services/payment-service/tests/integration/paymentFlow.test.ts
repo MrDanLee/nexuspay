@@ -1,16 +1,17 @@
 import { randomUUID } from 'node:crypto';
+
 import knex, { Knex } from 'knex';
 
-import { PaymentStatus } from '../../src/domain/value-objects/PaymentStatus';
-import { KnexPaymentRepository } from '../../src/infrastructure/repositories/KnexPaymentRepository';
-import { KnexRefundRepository } from '../../src/infrastructure/repositories/KnexRefundRepository';
-import { PaymentGatewayClient } from '../../src/infrastructure/external/PaymentGatewayClient';
-import { CircuitBreaker } from '../../src/infrastructure/resilience/CircuitBreaker';
 import { ProcessPaymentHandler } from '../../src/application/handlers/ProcessPaymentHandler';
 import { RefundHandler } from '../../src/application/handlers/RefundHandler';
+import { PaymentStatus } from '../../src/domain/value-objects/PaymentStatus';
 import { up as createPayments } from '../../src/infrastructure/database/migrations/001_create_payments_table';
 import { up as createRefunds } from '../../src/infrastructure/database/migrations/002_create_refunds_table';
 import { up as createPaymentEvents } from '../../src/infrastructure/database/migrations/003_create_payment_events_table';
+import { PaymentGatewayClient } from '../../src/infrastructure/external/PaymentGatewayClient';
+import { KnexPaymentRepository } from '../../src/infrastructure/repositories/KnexPaymentRepository';
+import { KnexRefundRepository } from '../../src/infrastructure/repositories/KnexRefundRepository';
+import { CircuitBreaker } from '../../src/infrastructure/resilience/CircuitBreaker';
 
 /**
  * Full payment lifecycle against real PostgreSQL, covering the Knex

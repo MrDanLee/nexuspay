@@ -1,14 +1,14 @@
-import { Knex } from 'knex';
 import { ConflictError, Money } from '@nexuspay/shared';
+import { Knex } from 'knex';
 
-import { Order } from '../../domain/entities/Order';
-import { OrderStatus } from '../../domain/value-objects/OrderStatus';
 import {
   OrderRepository,
   PaginationOptions,
   PaginatedResult,
 } from '../../application/ports/OrderRepository';
 import { OutboxEventInput } from '../../application/ports/OutboxRepository';
+import { Order } from '../../domain/entities/Order';
+import { OrderStatus } from '../../domain/value-objects/OrderStatus';
 
 interface OrderRow {
   id: string;

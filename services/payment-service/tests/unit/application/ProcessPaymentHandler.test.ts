@@ -1,12 +1,12 @@
+import { ProcessPaymentHandler } from '../../../src/application/handlers/ProcessPaymentHandler';
+import { PaymentRepository } from '../../../src/application/ports/PaymentRepository';
 import { Payment } from '../../../src/domain/entities/Payment';
 import { PaymentStatus } from '../../../src/domain/value-objects/PaymentStatus';
-import { PaymentRepository } from '../../../src/application/ports/PaymentRepository';
 import {
   PaymentGatewayClient,
   GatewayError,
 } from '../../../src/infrastructure/external/PaymentGatewayClient';
 import { CircuitBreaker } from '../../../src/infrastructure/resilience/CircuitBreaker';
-import { ProcessPaymentHandler } from '../../../src/application/handlers/ProcessPaymentHandler';
 
 class FakePaymentRepository implements PaymentRepository {
   private readonly byId = new Map<string, Payment>();

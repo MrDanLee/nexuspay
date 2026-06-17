@@ -1,6 +1,6 @@
+import cors from 'cors';
 import { RequestHandler } from 'express';
 import helmet from 'helmet';
-import cors from 'cors';
 
 export interface SecurityOptions {
   /** CORS origin(s). Default true (reflect request origin). */

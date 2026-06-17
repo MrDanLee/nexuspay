@@ -1,10 +1,10 @@
 import { NotFoundError, createLogger } from '@nexuspay/shared';
 
 import { Order } from '../../domain/entities/Order';
-import { OrderRepository } from '../ports/OrderRepository';
+import { orderMetrics } from '../../infrastructure/observability/orderMetrics';
 import { CancelOrderCommand } from '../commands/CancelOrderCommand';
 import { orderCancelledEvent } from '../events/orderEvents';
-import { orderMetrics } from '../../infrastructure/observability/orderMetrics';
+import { OrderRepository } from '../ports/OrderRepository';
 
 const logger = createLogger({ service: 'order-service', handler: 'CancelOrderHandler' });
 

@@ -6,13 +6,13 @@ import {
   PaymentGatewayClient,
   isRetryableGatewayError,
 } from '../../infrastructure/external/PaymentGatewayClient';
+import { PaymentMetrics } from '../../infrastructure/observability/PaymentMetrics';
 import {
   CircuitBreaker,
   CircuitOpenError,
 } from '../../infrastructure/resilience/CircuitBreaker';
-import { PaymentMetrics } from '../../infrastructure/observability/PaymentMetrics';
-import { PaymentRepository } from '../ports/PaymentRepository';
 import { ProcessPaymentCommand } from '../commands/ProcessPaymentCommand';
+import { PaymentRepository } from '../ports/PaymentRepository';
 
 const logger = createLogger({ service: 'payment-service', handler: 'ProcessPaymentHandler' });
 

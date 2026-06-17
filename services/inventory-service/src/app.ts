@@ -1,5 +1,3 @@
-import express, { Request, Response } from 'express';
-import compression from 'compression';
 import {
   securityHeaders,
   sanitizeMiddleware,
@@ -9,16 +7,18 @@ import {
   errorHandlerMiddleware,
   HealthChecker,
 } from '@nexuspay/shared';
+import compression from 'compression';
+import express, { Request, Response } from 'express';
 
+import { ReleaseStockHandler } from './application/handlers/ReleaseStockHandler';
+import { ReserveStockHandler } from './application/handlers/ReserveStockHandler';
+import { CheckStockHandler } from './application/queries/CheckStockQuery';
 import { config } from './config';
 import { getDatabase, checkDatabaseHealth } from './infrastructure/database/connection';
+import { ReservationExpiryJob } from './infrastructure/jobs/ReservationExpiryJob';
 import { KnexInventoryRepository } from './infrastructure/repositories/KnexInventoryRepository';
-import { ReserveStockHandler } from './application/handlers/ReserveStockHandler';
-import { ReleaseStockHandler } from './application/handlers/ReleaseStockHandler';
-import { CheckStockHandler } from './application/queries/CheckStockQuery';
 import { InventoryController } from './interfaces/http/controllers/InventoryController';
 import { registerRoutes } from './interfaces/http/routes';
-import { ReservationExpiryJob } from './infrastructure/jobs/ReservationExpiryJob';
 
 // ─── Logger ─────────────────────────────────────
 const logger = createLogger({ service: 'inventory-service' });

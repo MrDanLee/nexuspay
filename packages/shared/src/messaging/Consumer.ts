@@ -3,8 +3,8 @@ import { randomUUID } from 'node:crypto';
 import { Channel } from 'amqplib';
 import { Logger } from 'pino';
 
-import { DomainEvent } from '../events/DomainEvent';
 import { RequestContext } from '../context/RequestContext';
+import { DomainEvent } from '../events/DomainEvent';
 import { continueTrace } from '../observability/trace';
 
 export type EventHandler = (event: DomainEvent) => Promise<void>;

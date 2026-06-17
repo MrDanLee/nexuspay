@@ -1,9 +1,9 @@
-import { AuditQueryHandler } from '../../src/application/queries/AuditQueryHandler';
 import {
   AuditRepository,
   AuditPagination,
   PaginatedAuditEvents,
 } from '../../src/application/ports/AuditRepository';
+import { AuditQueryHandler } from '../../src/application/queries/AuditQueryHandler';
 
 const emptyPage: PaginatedAuditEvents = {
   data: [],

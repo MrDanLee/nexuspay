@@ -1,8 +1,9 @@
 import { randomUUID } from 'node:crypto';
+
 import { DomainEvent, EventType, Exchanges, Publisher, ConflictError } from '@nexuspay/shared';
 
-import { ReserveStockHandler } from '../../../src/application/handlers/ReserveStockHandler';
 import { ReleaseStockHandler } from '../../../src/application/handlers/ReleaseStockHandler';
+import { ReserveStockHandler } from '../../../src/application/handlers/ReserveStockHandler';
 import { InventoryEventHandlers } from '../../../src/interfaces/messaging/eventHandlers';
 
 const makeEvent = (type: string, data: Record<string, unknown>): DomainEvent => ({

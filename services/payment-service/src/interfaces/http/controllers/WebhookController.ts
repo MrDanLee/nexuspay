@@ -1,6 +1,6 @@
+import { AuthenticationError, ValidationError } from '@nexuspay/shared';
 import { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
-import { AuthenticationError, ValidationError } from '@nexuspay/shared';
 
 import { ProcessWebhookHandler } from '../../../application/handlers/ProcessWebhookHandler';
 import { verifySignature } from '../../../infrastructure/security/webhookSignature';

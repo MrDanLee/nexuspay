@@ -1,5 +1,3 @@
-import express, { Request, Response } from 'express';
-import compression from 'compression';
 import {
   securityHeaders,
   sanitizeMiddleware,
@@ -11,19 +9,21 @@ import {
   HealthChecker,
   RedisClient,
 } from '@nexuspay/shared';
+import compression from 'compression';
+import express, { Request, Response } from 'express';
 
+import { ProcessPaymentHandler } from './application/handlers/ProcessPaymentHandler';
+import { ProcessWebhookHandler } from './application/handlers/ProcessWebhookHandler';
+import { RefundHandler } from './application/handlers/RefundHandler';
+import { GetPaymentHandler } from './application/queries/GetPaymentQuery';
 import { config } from './config';
 import { getDatabase, checkDatabaseHealth } from './infrastructure/database/connection';
+import { PaymentGatewayClient } from './infrastructure/external/PaymentGatewayClient';
+import { isRetryableGatewayError } from './infrastructure/external/PaymentGatewayClient';
+import { PaymentMetrics } from './infrastructure/observability/PaymentMetrics';
 import { KnexPaymentRepository } from './infrastructure/repositories/KnexPaymentRepository';
 import { KnexRefundRepository } from './infrastructure/repositories/KnexRefundRepository';
-import { PaymentGatewayClient } from './infrastructure/external/PaymentGatewayClient';
 import { CircuitBreaker } from './infrastructure/resilience/CircuitBreaker';
-import { PaymentMetrics } from './infrastructure/observability/PaymentMetrics';
-import { isRetryableGatewayError } from './infrastructure/external/PaymentGatewayClient';
-import { ProcessPaymentHandler } from './application/handlers/ProcessPaymentHandler';
-import { RefundHandler } from './application/handlers/RefundHandler';
-import { ProcessWebhookHandler } from './application/handlers/ProcessWebhookHandler';
-import { GetPaymentHandler } from './application/queries/GetPaymentQuery';
 import { PaymentController } from './interfaces/http/controllers/PaymentController';
 import { WebhookController } from './interfaces/http/controllers/WebhookController';
 import { registerRoutes } from './interfaces/http/routes';

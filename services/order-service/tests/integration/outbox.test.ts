@@ -1,15 +1,16 @@
 import { randomUUID } from 'node:crypto';
-import knex, { Knex } from 'knex';
-import { Money, Publisher } from '@nexuspay/shared';
 
-import { Order } from '../../src/domain/entities/Order';
-import { KnexOrderRepository } from '../../src/infrastructure/repositories/KnexOrderRepository';
-import { KnexOutboxRepository } from '../../src/infrastructure/repositories/KnexOutboxRepository';
-import { OutboxPoller } from '../../src/infrastructure/messaging/OutboxPoller';
+import { Money, Publisher } from '@nexuspay/shared';
+import knex, { Knex } from 'knex';
+
 import { OutboxEventInput } from '../../src/application/ports/OutboxRepository';
+import { Order } from '../../src/domain/entities/Order';
 import { up as createOrders } from '../../src/infrastructure/database/migrations/001_create_orders_table';
 import { up as createOrderItems } from '../../src/infrastructure/database/migrations/002_create_order_items_table';
 import { up as createOutbox } from '../../src/infrastructure/database/migrations/004_create_outbox_events_table';
+import { OutboxPoller } from '../../src/infrastructure/messaging/OutboxPoller';
+import { KnexOrderRepository } from '../../src/infrastructure/repositories/KnexOrderRepository';
+import { KnexOutboxRepository } from '../../src/infrastructure/repositories/KnexOutboxRepository';
 
 /**
  * Outbox integration tests against real PostgreSQL (gated behind

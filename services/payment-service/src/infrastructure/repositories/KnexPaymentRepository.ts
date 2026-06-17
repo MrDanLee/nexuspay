@@ -1,9 +1,9 @@
-import { Knex } from 'knex';
 import { Money, ConflictError } from '@nexuspay/shared';
+import { Knex } from 'knex';
 
+import { PaymentRepository } from '../../application/ports/PaymentRepository';
 import { Payment, RecordedPaymentEvent } from '../../domain/entities/Payment';
 import { PaymentStatus } from '../../domain/value-objects/PaymentStatus';
-import { PaymentRepository } from '../../application/ports/PaymentRepository';
 
 interface PaymentRow {
   id: string;

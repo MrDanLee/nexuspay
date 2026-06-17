@@ -1,10 +1,10 @@
-import { Request, Response, NextFunction } from 'express';
 import { ValidationError } from '@nexuspay/shared';
+import { Request, Response, NextFunction } from 'express';
 
-import { Payment } from '../../../domain/entities/Payment';
 import { ProcessPaymentHandler } from '../../../application/handlers/ProcessPaymentHandler';
 import { RefundHandler } from '../../../application/handlers/RefundHandler';
 import { GetPaymentHandler } from '../../../application/queries/GetPaymentQuery';
+import { Payment } from '../../../domain/entities/Payment';
 import {
   orderIdParamSchema,
   paymentIdParamSchema,

@@ -1,9 +1,10 @@
 import { randomUUID } from 'node:crypto';
+
 import knex, { Knex } from 'knex';
 
-import { KnexAuditRepository } from '../../src/infrastructure/repositories/KnexAuditRepository';
 import { AuditAppendInput } from '../../src/application/ports/AuditRepository';
 import { up as createAuditEvents } from '../../src/infrastructure/database/migrations/001_create_audit_events_table';
+import { KnexAuditRepository } from '../../src/infrastructure/repositories/KnexAuditRepository';
 
 /**
  * Integration tests for the append-only audit store against a real

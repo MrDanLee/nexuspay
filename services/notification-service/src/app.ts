@@ -1,5 +1,3 @@
-import express, { Request, Response } from 'express';
-import compression from 'compression';
 import {
   securityHeaders,
   createLogger,
@@ -11,6 +9,8 @@ import {
   MetricsRegistry,
   HealthChecker,
 } from '@nexuspay/shared';
+import compression from 'compression';
+import express, { Request, Response } from 'express';
 
 // ─── Logger ─────────────────────────────────────
 const logger = createLogger({ service: 'notification-service' });

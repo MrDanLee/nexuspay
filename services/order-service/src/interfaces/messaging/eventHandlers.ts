@@ -1,9 +1,9 @@
 import { DomainEvent, EventType, createLogger } from '@nexuspay/shared';
 
-import { OrderStatus } from '../../domain/value-objects/OrderStatus';
+import { orderConfirmedEvent, orderCancelledEvent } from '../../application/events/orderEvents';
 import { OrderRepository } from '../../application/ports/OrderRepository';
 import { SagaStepRepository } from '../../application/ports/SagaStepRepository';
-import { orderConfirmedEvent, orderCancelledEvent } from '../../application/events/orderEvents';
+import { OrderStatus } from '../../domain/value-objects/OrderStatus';
 import { orderMetrics } from '../../infrastructure/observability/orderMetrics';
 
 const logger = createLogger({ service: 'order-service', component: 'eventHandlers' });

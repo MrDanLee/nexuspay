@@ -1,16 +1,17 @@
 import { randomUUID } from 'node:crypto';
+
+import { Money, requestIdMiddleware, errorHandlerMiddleware } from '@nexuspay/shared';
 import express, { Application } from 'express';
 import pino from 'pino';
 import supertest from 'supertest';
-import { Money, requestIdMiddleware, errorHandlerMiddleware } from '@nexuspay/shared';
 
+import { ProcessWebhookHandler } from '../../src/application/handlers/ProcessWebhookHandler';
+import { PaymentRepository } from '../../src/application/ports/PaymentRepository';
 import { Payment } from '../../src/domain/entities/Payment';
 import { PaymentStatus } from '../../src/domain/value-objects/PaymentStatus';
-import { PaymentRepository } from '../../src/application/ports/PaymentRepository';
-import { ProcessWebhookHandler } from '../../src/application/handlers/ProcessWebhookHandler';
+import { signPayload } from '../../src/infrastructure/security/webhookSignature';
 import { WebhookController } from '../../src/interfaces/http/controllers/WebhookController';
 import { createWebhookRoutes } from '../../src/interfaces/http/routes/webhookRoutes';
-import { signPayload } from '../../src/infrastructure/security/webhookSignature';
 
 const SECRET = 'test-webhook-secret';
 

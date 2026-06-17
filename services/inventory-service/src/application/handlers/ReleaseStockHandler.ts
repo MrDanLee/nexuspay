@@ -1,7 +1,7 @@
 import { createLogger } from '@nexuspay/shared';
 
-import { InventoryRepository } from '../ports/InventoryRepository';
 import { ReleaseStockCommand } from '../commands/ReleaseStockCommand';
+import { InventoryRepository } from '../ports/InventoryRepository';
 
 const logger = createLogger({ service: 'inventory-service', handler: 'ReleaseStockHandler' });
 

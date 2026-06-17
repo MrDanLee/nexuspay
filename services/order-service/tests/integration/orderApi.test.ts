@@ -1,22 +1,23 @@
 import { randomUUID } from 'node:crypto';
-import express, { Application } from 'express';
-import pino from 'pino';
-import supertest from 'supertest';
+
 import {
   requestIdMiddleware,
   errorHandlerMiddleware,
 } from '@nexuspay/shared';
+import express, { Application } from 'express';
+import pino from 'pino';
+import supertest from 'supertest';
 
-import { Order } from '../../src/domain/entities/Order';
+import { CancelOrderHandler } from '../../src/application/handlers/CancelOrderHandler';
+import { CreateOrderHandler } from '../../src/application/handlers/CreateOrderHandler';
 import {
   OrderRepository,
   PaginatedResult,
   PaginationOptions,
 } from '../../src/application/ports/OrderRepository';
-import { CreateOrderHandler } from '../../src/application/handlers/CreateOrderHandler';
-import { CancelOrderHandler } from '../../src/application/handlers/CancelOrderHandler';
 import { GetOrderHandler } from '../../src/application/queries/GetOrderQuery';
 import { ListOrdersHandler } from '../../src/application/queries/ListOrdersQuery';
+import { Order } from '../../src/domain/entities/Order';
 import { OrderController } from '../../src/interfaces/http/controllers/OrderController';
 import { createOrderRoutes } from '../../src/interfaces/http/routes/orderRoutes';
 

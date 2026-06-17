@@ -1,8 +1,8 @@
-import amqp, { ChannelModel } from 'amqplib';
 import { Consumer, setupTopology, Queues, createLogger } from '@nexuspay/shared';
+import amqp, { ChannelModel } from 'amqplib';
 
-import { config } from '../../config';
 import { auditRepository } from '../../app';
+import { config } from '../../config';
 
 import { AuditEventHandlers } from './eventHandlers';
 

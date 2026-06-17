@@ -1,9 +1,9 @@
-import amqp, { ChannelModel } from 'amqplib';
 import { Consumer, setupTopology, Queues, RedisClient, createLogger } from '@nexuspay/shared';
+import amqp, { ChannelModel } from 'amqplib';
 
-import { config } from '../../config';
-import { NotificationDispatcher } from '../../application/NotificationDispatcher';
 import { ConsumeOnceGuard } from '../../application/ConsumeOnceGuard';
+import { NotificationDispatcher } from '../../application/NotificationDispatcher';
+import { config } from '../../config';
 
 import { NotificationEventHandlers } from './eventHandlers';
 

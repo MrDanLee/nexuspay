@@ -1,8 +1,8 @@
 import { ConfirmChannel } from 'amqplib';
 import { Logger } from 'pino';
 
-import { DomainEvent } from '../events/DomainEvent';
 import { RequestContext } from '../context/RequestContext';
+import { DomainEvent } from '../events/DomainEvent';
 import { formatTraceparent } from '../observability/trace';
 
 /**

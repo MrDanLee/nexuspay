@@ -1,10 +1,11 @@
 import { randomUUID } from 'node:crypto';
+
 import { Money, NotFoundError } from '@nexuspay/shared';
 
-import { Order } from '../../../src/domain/entities/Order';
 import { OrderRepository } from '../../../src/application/ports/OrderRepository';
 import { SagaStepRepository, SagaStep } from '../../../src/application/ports/SagaStepRepository';
 import { GetTimelineHandler } from '../../../src/application/queries/GetTimelineQuery';
+import { Order } from '../../../src/domain/entities/Order';
 
 const makeOrder = (customerId: string) =>
   new Order({

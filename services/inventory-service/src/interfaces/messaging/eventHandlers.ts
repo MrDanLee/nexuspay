@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+
 import {
   DomainEvent,
   EventType,
@@ -7,8 +8,8 @@ import {
   createLogger,
 } from '@nexuspay/shared';
 
-import { ReserveStockHandler } from '../../application/handlers/ReserveStockHandler';
 import { ReleaseStockHandler } from '../../application/handlers/ReleaseStockHandler';
+import { ReserveStockHandler } from '../../application/handlers/ReserveStockHandler';
 
 const logger = createLogger({ service: 'inventory-service', component: 'eventHandlers' });
 

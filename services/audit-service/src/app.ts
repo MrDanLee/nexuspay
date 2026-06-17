@@ -1,5 +1,3 @@
-import express, { Request, Response } from 'express';
-import compression from 'compression';
 import {
   securityHeaders,
   createLogger,
@@ -11,11 +9,13 @@ import {
   MetricsRegistry,
   HealthChecker,
 } from '@nexuspay/shared';
+import compression from 'compression';
+import express, { Request, Response } from 'express';
 
+import { AuditQueryHandler } from './application/queries/AuditQueryHandler';
 import { config } from './config';
 import { getDatabase, checkDatabaseHealth } from './infrastructure/database/connection';
 import { KnexAuditRepository } from './infrastructure/repositories/KnexAuditRepository';
-import { AuditQueryHandler } from './application/queries/AuditQueryHandler';
 import { AuditController } from './interfaces/http/controllers/AuditController';
 import { registerRoutes } from './interfaces/http/routes';
 

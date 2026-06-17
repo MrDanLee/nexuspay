@@ -2,8 +2,8 @@ import express, { Request, Response } from 'express';
 import pino from 'pino';
 import supertest from 'supertest';
 
-import { idempotencyMiddleware, IdempotencyStore } from '../../../src/middleware/idempotency';
 import { errorHandlerMiddleware } from '../../../src/middleware/errorHandler';
+import { idempotencyMiddleware, IdempotencyStore } from '../../../src/middleware/idempotency';
 import { requestIdMiddleware } from '../../../src/middleware/requestId';
 
 const logger = pino({ level: 'silent' });

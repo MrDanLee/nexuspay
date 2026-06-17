@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 
-import { MetricsRegistry, defaultRegistry } from '../observability/metrics';
 import { MetricNames } from '../observability/metricNames';
+import { MetricsRegistry, defaultRegistry } from '../observability/metrics';
 
 export interface HttpMetricsOptions {
   /** Registry to record into. Defaults to the process-wide registry. */

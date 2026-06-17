@@ -1,12 +1,12 @@
-import amqp, { ChannelModel } from 'amqplib';
 import { Publisher, Consumer, setupTopology, Exchanges, Queues, createLogger } from '@nexuspay/shared';
+import amqp, { ChannelModel } from 'amqplib';
 
+import { orderRepository } from '../../app';
 import { config } from '../../config';
 import { getDatabase } from '../../infrastructure/database/connection';
+import { OutboxPoller } from '../../infrastructure/messaging/OutboxPoller';
 import { KnexOutboxRepository } from '../../infrastructure/repositories/KnexOutboxRepository';
 import { KnexSagaStepRepository } from '../../infrastructure/repositories/KnexSagaStepRepository';
-import { OutboxPoller } from '../../infrastructure/messaging/OutboxPoller';
-import { orderRepository } from '../../app';
 
 import { OrderEventHandlers } from './eventHandlers';
 

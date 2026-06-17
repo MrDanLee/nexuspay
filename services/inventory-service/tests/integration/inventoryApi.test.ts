@@ -1,23 +1,24 @@
 import { randomUUID } from 'node:crypto';
-import express, { Application } from 'express';
-import pino from 'pino';
-import supertest from 'supertest';
+
 import {
   requestIdMiddleware,
   errorHandlerMiddleware,
   NotFoundError,
 } from '@nexuspay/shared';
+import express, { Application } from 'express';
+import pino from 'pino';
+import supertest from 'supertest';
 
-import { Inventory } from '../../src/domain/entities/Inventory';
+import { ReleaseStockHandler } from '../../src/application/handlers/ReleaseStockHandler';
+import { ReserveStockHandler } from '../../src/application/handlers/ReserveStockHandler';
 import {
   InventoryRepository,
   ReservationItem,
   ReservationResult,
   ExpiredReservation,
 } from '../../src/application/ports/InventoryRepository';
-import { ReserveStockHandler } from '../../src/application/handlers/ReserveStockHandler';
-import { ReleaseStockHandler } from '../../src/application/handlers/ReleaseStockHandler';
 import { CheckStockHandler } from '../../src/application/queries/CheckStockQuery';
+import { Inventory } from '../../src/domain/entities/Inventory';
 import { InventoryController } from '../../src/interfaces/http/controllers/InventoryController';
 import { createInventoryRoutes } from '../../src/interfaces/http/routes/inventoryRoutes';
 

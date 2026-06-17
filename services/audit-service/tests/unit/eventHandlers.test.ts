@@ -1,9 +1,10 @@
 import { randomUUID } from 'node:crypto';
-import pino from 'pino';
-import { DomainEvent, EventType } from '@nexuspay/shared';
 
-import { AuditEventHandlers } from '../../src/interfaces/messaging/eventHandlers';
+import { DomainEvent, EventType } from '@nexuspay/shared';
+import pino from 'pino';
+
 import { AuditRepository, AuditAppendInput } from '../../src/application/ports/AuditRepository';
+import { AuditEventHandlers } from '../../src/interfaces/messaging/eventHandlers';
 
 const logger = pino({ level: 'silent' });
 

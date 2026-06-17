@@ -1,10 +1,11 @@
 import { randomUUID } from 'node:crypto';
-import pino from 'pino';
-import { DomainEvent, EventType } from '@nexuspay/shared';
 
+import { DomainEvent, EventType } from '@nexuspay/shared';
+import pino from 'pino';
+
+import { ConsumeOnceGuard } from '../../src/application/ConsumeOnceGuard';
 import { NotificationDispatcher } from '../../src/application/NotificationDispatcher';
 import { NotificationEventHandlers } from '../../src/interfaces/messaging/eventHandlers';
-import { ConsumeOnceGuard } from '../../src/application/ConsumeOnceGuard';
 
 const logger = pino({ level: 'silent' });
 

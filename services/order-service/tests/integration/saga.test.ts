@@ -1,37 +1,37 @@
 import { randomUUID } from 'node:crypto';
+
+import { Publisher, Consumer, setupTopology, Exchanges, Queues } from '@nexuspay/shared';
 import amqp, { ChannelModel, ConfirmChannel, Channel } from 'amqplib';
 import knex, { Knex } from 'knex';
 import pino from 'pino';
-import { Publisher, Consumer, setupTopology, Exchanges, Queues } from '@nexuspay/shared';
 
-import { KnexOrderRepository } from '../../src/infrastructure/repositories/KnexOrderRepository';
-import { KnexOutboxRepository } from '../../src/infrastructure/repositories/KnexOutboxRepository';
-import { KnexSagaStepRepository } from '../../src/infrastructure/repositories/KnexSagaStepRepository';
+
+import { ReleaseStockHandler } from '../../../inventory-service/src/application/handlers/ReleaseStockHandler';
+import { ReserveStockHandler } from '../../../inventory-service/src/application/handlers/ReserveStockHandler';
+import { up as createProducts } from '../../../inventory-service/src/infrastructure/database/migrations/001_create_products_table';
+import { up as createInventory } from '../../../inventory-service/src/infrastructure/database/migrations/002_create_inventory_table';
+import { up as createReservations } from '../../../inventory-service/src/infrastructure/database/migrations/003_create_reservations_table';
+import { KnexInventoryRepository } from '../../../inventory-service/src/infrastructure/repositories/KnexInventoryRepository';
+import { InventoryEventHandlers } from '../../../inventory-service/src/interfaces/messaging/eventHandlers';
+import { ProcessPaymentHandler } from '../../../payment-service/src/application/handlers/ProcessPaymentHandler';
+import { up as createPayments } from '../../../payment-service/src/infrastructure/database/migrations/001_create_payments_table';
+import { up as createRefunds } from '../../../payment-service/src/infrastructure/database/migrations/002_create_refunds_table';
+import { up as createPaymentEvents } from '../../../payment-service/src/infrastructure/database/migrations/003_create_payment_events_table';
+import { PaymentGatewayClient } from '../../../payment-service/src/infrastructure/external/PaymentGatewayClient';
+import { KnexPaymentRepository } from '../../../payment-service/src/infrastructure/repositories/KnexPaymentRepository';
+import { CircuitBreaker } from '../../../payment-service/src/infrastructure/resilience/CircuitBreaker';
+import { PaymentEventHandlers } from '../../../payment-service/src/interfaces/messaging/eventHandlers';
 import { CreateOrderHandler } from '../../src/application/handlers/CreateOrderHandler';
-import { OutboxPoller } from '../../src/infrastructure/messaging/OutboxPoller';
-import { OrderEventHandlers } from '../../src/interfaces/messaging/eventHandlers';
 import { OrderStatus } from '../../src/domain/value-objects/OrderStatus';
 import { up as createOrders } from '../../src/infrastructure/database/migrations/001_create_orders_table';
 import { up as createOrderItems } from '../../src/infrastructure/database/migrations/002_create_order_items_table';
 import { up as createSagaSteps } from '../../src/infrastructure/database/migrations/003_create_saga_steps_table';
 import { up as createOutbox } from '../../src/infrastructure/database/migrations/004_create_outbox_events_table';
-
-import { KnexInventoryRepository } from '../../../inventory-service/src/infrastructure/repositories/KnexInventoryRepository';
-import { ReserveStockHandler } from '../../../inventory-service/src/application/handlers/ReserveStockHandler';
-import { ReleaseStockHandler } from '../../../inventory-service/src/application/handlers/ReleaseStockHandler';
-import { InventoryEventHandlers } from '../../../inventory-service/src/interfaces/messaging/eventHandlers';
-import { up as createProducts } from '../../../inventory-service/src/infrastructure/database/migrations/001_create_products_table';
-import { up as createInventory } from '../../../inventory-service/src/infrastructure/database/migrations/002_create_inventory_table';
-import { up as createReservations } from '../../../inventory-service/src/infrastructure/database/migrations/003_create_reservations_table';
-
-import { KnexPaymentRepository } from '../../../payment-service/src/infrastructure/repositories/KnexPaymentRepository';
-import { PaymentGatewayClient } from '../../../payment-service/src/infrastructure/external/PaymentGatewayClient';
-import { CircuitBreaker } from '../../../payment-service/src/infrastructure/resilience/CircuitBreaker';
-import { ProcessPaymentHandler } from '../../../payment-service/src/application/handlers/ProcessPaymentHandler';
-import { PaymentEventHandlers } from '../../../payment-service/src/interfaces/messaging/eventHandlers';
-import { up as createPayments } from '../../../payment-service/src/infrastructure/database/migrations/001_create_payments_table';
-import { up as createRefunds } from '../../../payment-service/src/infrastructure/database/migrations/002_create_refunds_table';
-import { up as createPaymentEvents } from '../../../payment-service/src/infrastructure/database/migrations/003_create_payment_events_table';
+import { OutboxPoller } from '../../src/infrastructure/messaging/OutboxPoller';
+import { KnexOrderRepository } from '../../src/infrastructure/repositories/KnexOrderRepository';
+import { KnexOutboxRepository } from '../../src/infrastructure/repositories/KnexOutboxRepository';
+import { KnexSagaStepRepository } from '../../src/infrastructure/repositories/KnexSagaStepRepository';
+import { OrderEventHandlers } from '../../src/interfaces/messaging/eventHandlers';
 
 /**
  * End-to-end saga tests wiring all three services' consumers in-process

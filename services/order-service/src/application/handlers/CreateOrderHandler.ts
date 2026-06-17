@@ -1,10 +1,10 @@
 import { Money, createLogger } from '@nexuspay/shared';
 
 import { Order } from '../../domain/entities/Order';
-import { OrderRepository } from '../ports/OrderRepository';
+import { orderMetrics } from '../../infrastructure/observability/orderMetrics';
 import { CreateOrderCommand } from '../commands/CreateOrderCommand';
 import { orderCreatedEvent } from '../events/orderEvents';
-import { orderMetrics } from '../../infrastructure/observability/orderMetrics';
+import { OrderRepository } from '../ports/OrderRepository';
 
 const logger = createLogger({ service: 'order-service', handler: 'CreateOrderHandler' });
 

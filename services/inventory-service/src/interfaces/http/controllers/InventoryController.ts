@@ -1,8 +1,8 @@
-import { Request, Response, NextFunction } from 'express';
 import { ValidationError, NotFoundError } from '@nexuspay/shared';
+import { Request, Response, NextFunction } from 'express';
 
-import { ReserveStockHandler } from '../../../application/handlers/ReserveStockHandler';
 import { ReleaseStockHandler } from '../../../application/handlers/ReleaseStockHandler';
+import { ReserveStockHandler } from '../../../application/handlers/ReserveStockHandler';
 import { CheckStockHandler } from '../../../application/queries/CheckStockQuery';
 import {
   skuParamSchema,

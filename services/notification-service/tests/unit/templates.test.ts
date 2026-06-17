@@ -1,7 +1,7 @@
 import { EventType } from '@nexuspay/shared';
 
-import { render } from '../../src/templates/renderer';
 import { renderNotification, templateFor } from '../../src/templates';
+import { render } from '../../src/templates/renderer';
 
 describe('render', () => {
   it('interpolates simple placeholders', () => {

@@ -1,11 +1,12 @@
 import { randomUUID } from 'node:crypto';
+
 import amqp, { ChannelModel, ConfirmChannel, Channel } from 'amqplib';
 import pino from 'pino';
 
-import { Publisher } from '../../src/messaging/Publisher';
-import { Consumer } from '../../src/messaging/Consumer';
-import { setupTopology, Exchanges, Queues } from '../../src/messaging/topology';
 import { DomainEvent, EventType } from '../../src/events/DomainEvent';
+import { Consumer } from '../../src/messaging/Consumer';
+import { Publisher } from '../../src/messaging/Publisher';
+import { setupTopology, Exchanges, Queues } from '../../src/messaging/topology';
 
 /**
  * Round-trip messaging tests against a real RabbitMQ broker. Gated behind

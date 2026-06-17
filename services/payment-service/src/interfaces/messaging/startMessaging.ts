@@ -1,8 +1,8 @@
-import amqp, { ChannelModel } from 'amqplib';
 import { Publisher, Consumer, setupTopology, Queues, createLogger } from '@nexuspay/shared';
+import amqp, { ChannelModel } from 'amqplib';
 
-import { config } from '../../config';
 import { processPaymentHandler } from '../../app';
+import { config } from '../../config';
 
 import { PaymentEventHandlers } from './eventHandlers';
 

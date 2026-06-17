@@ -1,13 +1,13 @@
-import { Knex } from 'knex';
 import { NotFoundError } from '@nexuspay/shared';
+import { Knex } from 'knex';
 
-import { Inventory } from '../../domain/entities/Inventory';
 import {
   InventoryRepository,
   ReservationItem,
   ReservationResult,
   ExpiredReservation,
 } from '../../application/ports/InventoryRepository';
+import { Inventory } from '../../domain/entities/Inventory';
 
 interface InventoryRow {
   id: string;
