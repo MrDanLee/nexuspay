@@ -1,12 +1,12 @@
 # NexusPay
 
-Distributed payment and order processing system built with TypeScript, Node.js, and event-driven architecture.
+[![CI](https://github.com/MrDanLee/nexuspay/actions/workflows/ci.yml/badge.svg)](https://github.com/MrDanLee/nexuspay/actions/workflows/ci.yml)
 
-> **Status:** Under active development
+Distributed payment and order processing system built with TypeScript, Node.js, and event-driven architecture.
 
 ## What is this?
 
-NexusPay is a backend system that handles the full lifecycle of e-commerce transactions: order creation, inventory reservation, payment processing, and notification delivery. It demonstrates production-grade distributed systems patterns including saga orchestration, event sourcing, circuit breakers, and idempotent APIs.
+NexusPay is a backend system that handles the full lifecycle of e-commerce transactions: order creation, inventory reservation, payment processing, and notification delivery. It demonstrates production-grade distributed systems patterns including choreographed sagas with compensation, the transactional outbox, circuit breakers, and idempotent APIs.
 
 This is not a CRUD application. It solves real problems that arise when multiple services need to coordinate transactional workflows reliably.
 
@@ -211,6 +211,34 @@ kubectl -n nexuspay get pods,svc,hpa
 kubectl -n nexuspay logs deploy/order-service -f
 kubectl -n nexuspay rollout status deploy/order-service
 ```
+
+## Testing
+
+```bash
+# Unit tests (no Docker needed) — runs across all workspaces
+npm test
+
+# A single workspace
+npm test --workspace @nexuspay/order-service
+```
+
+Integration and end-to-end tests are gated behind environment flags so the
+default run stays green without infrastructure:
+
+```bash
+# Integration tests (real PostgreSQL / RabbitMQ via docker compose)
+RUN_INTEGRATION_DB=1 RUN_INTEGRATION_RABBIT=1 RUN_INTEGRATION_SAGA=1 npm test
+
+# End-to-end tests against the running full stack
+docker compose up -d --build
+RUN_E2E=1 npm run test:e2e
+```
+
+## Documentation
+
+- **API** — [OpenAPI 3.0 spec](docs/api/openapi.yaml)
+- **Architecture decisions** — [ADRs](docs/adr/README.md)
+- **Operations** — [Runbook](docs/runbook.md)
 
 ## Project Structure
 ```
