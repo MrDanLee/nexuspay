@@ -43,6 +43,7 @@ export class Order {
   readonly metadata: Record<string, unknown>;
   private _status: OrderStatus;
   private _version: number;
+  private readonly _initialVersion: number;
   readonly createdAt: Date;
   private _updatedAt: Date;
 
@@ -67,6 +68,10 @@ export class Order {
     this.metadata = props.metadata ?? {};
     this._status = props.status ?? OrderStatus.CREATED;
     this._version = props.version ?? 1;
+    // The version this aggregate was loaded with — the optimistic-lock guard
+    // matches on it, so a handler may apply several transitions before a single
+    // update without tripping a false version conflict.
+    this._initialVersion = this._version;
     this.createdAt = props.createdAt ?? new Date();
     this._updatedAt = props.updatedAt ?? new Date();
 
@@ -92,6 +97,11 @@ export class Order {
 
   get version(): number {
     return this._version;
+  }
+
+  /** The version this aggregate was loaded with (optimistic-lock guard). */
+  get initialVersion(): number {
+    return this._initialVersion;
   }
 
   get updatedAt(): Date {

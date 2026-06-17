@@ -144,8 +144,11 @@ export class KnexOrderRepository implements OrderRepository {
     }
 
     return this.db.transaction(async (trx) => {
+      // Match on the version the aggregate was loaded with, so a handler that
+      // applies several transitions before a single update still writes
+      // atomically (the new version may jump by more than one).
       const updated = await trx<OrderRow>('orders')
-        .where({ id: order.id, version: order.version - 1 })
+        .where({ id: order.id, version: order.initialVersion })
         .update({
           status: order.status,
           total_amount: order.totalAmount.toFixed(),
@@ -159,7 +162,7 @@ export class KnexOrderRepository implements OrderRepository {
       if (!updatedRow) {
         throw new ConflictError(
           `Order ${order.id} was modified by another process (version conflict)`,
-          { metadata: { orderId: order.id, expectedVersion: order.version - 1 } },
+          { metadata: { orderId: order.id, expectedVersion: order.initialVersion } },
         );
       }
 
