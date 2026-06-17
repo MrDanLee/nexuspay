@@ -17,9 +17,10 @@ JWT_SECRET="${JWT_SECRET:-nexuspay-dev-secret-change-in-production-min-32-chars}
 echo "==> Seeding product catalog (inventory)"
 npm run seed --workspace @nexuspay/inventory-service
 
-# Mint a short-lived demo customer token using the shared dev secret.
+# Mint a short-lived demo customer token using the shared dev secret. The
+# subject must be a UUID — it becomes the order's customer_id (a uuid column).
 token() {
-  node -e "console.log(require('jsonwebtoken').sign({sub:'demo-customer',roles:['customer']}, process.env.JWT_SECRET, {expiresIn:'1h'}))"
+  node -e "console.log(require('jsonwebtoken').sign({sub:require('crypto').randomUUID(),roles:['customer']}, process.env.JWT_SECRET, {expiresIn:'1h'}))"
 }
 
 create_order() {

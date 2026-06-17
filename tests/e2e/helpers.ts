@@ -11,8 +11,11 @@ export const INVENTORY_URL = process.env.INVENTORY_URL ?? 'http://localhost:3003
 const JWT_SECRET =
   process.env.JWT_SECRET ?? 'nexuspay-dev-secret-change-in-production-min-32-chars';
 
-/** Mint a customer JWT accepted by the order service. */
-export function mintToken(userId = 'e2e-customer'): string {
+/**
+ * Mint a customer JWT accepted by the order service. The subject must be a
+ * UUID — it becomes the order's customer_id (a uuid column).
+ */
+export function mintToken(userId: string = randomUUID()): string {
   return jwt.sign({ sub: userId, roles: ['customer'] }, JWT_SECRET, { expiresIn: '1h' });
 }
 
