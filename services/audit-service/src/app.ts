@@ -12,8 +12,12 @@ import {
   HealthChecker,
 } from '@nexuspay/shared';
 
+import { config } from './config';
 import { getDatabase, checkDatabaseHealth } from './infrastructure/database/connection';
 import { KnexAuditRepository } from './infrastructure/repositories/KnexAuditRepository';
+import { AuditQueryHandler } from './application/queries/AuditQueryHandler';
+import { AuditController } from './interfaces/http/controllers/AuditController';
+import { registerRoutes } from './interfaces/http/routes';
 
 // ─── Logger ─────────────────────────────────────
 const logger = createLogger({ service: 'audit-service' });
@@ -21,6 +25,11 @@ const logger = createLogger({ service: 'audit-service' });
 // ─── Dependencies ───────────────────────────────
 const db = getDatabase();
 const auditRepository = new KnexAuditRepository(db);
+const auditQueryHandler = new AuditQueryHandler(auditRepository, {
+  defaultLimit: config.QUERY_DEFAULT_LIMIT,
+  maxLimit: config.QUERY_MAX_LIMIT,
+});
+const auditController = new AuditController(auditQueryHandler);
 
 // ─── Health Checker ─────────────────────────────
 const healthChecker = new HealthChecker();
@@ -51,6 +60,9 @@ app.get('/health/ready', async (_req: Request, res: Response) => {
 app.get('/metrics', (_req: Request, res: Response) => {
   res.set('Content-Type', MetricsRegistry.CONTENT_TYPE).send(defaultRegistry.render());
 });
+
+// API routes
+app.use(registerRoutes(auditController));
 
 // Error handler (must be last)
 app.use(errorHandlerMiddleware(logger));
