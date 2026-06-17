@@ -1,0 +1,71 @@
+apiVersion: skaffold/v4beta11
+kind: Config
+metadata:
+  name: nexuspay
+
+# Local Kubernetes development (minikube/kind):
+#   skaffold dev        # build, deploy, watch, and port-forward
+#   skaffold run        # one-off build + deploy
+#
+# Images are built from each service's Dockerfile with the repo root as
+# context, deployed through the development Kustomize overlay, and the HTTP
+# ports are forwarded to localhost.
+build:
+  local:
+    push: false
+  artifacts:
+    - image: nexuspay/order-service
+      context: .
+      docker:
+        dockerfile: services/order-service/Dockerfile
+    - image: nexuspay/payment-service
+      context: .
+      docker:
+        dockerfile: services/payment-service/Dockerfile
+    - image: nexuspay/inventory-service
+      context: .
+      docker:
+        dockerfile: services/inventory-service/Dockerfile
+    - image: nexuspay/notification-service
+      context: .
+      docker:
+        dockerfile: services/notification-service/Dockerfile
+    - image: nexuspay/audit-service
+      context: .
+      docker:
+        dockerfile: services/audit-service/Dockerfile
+
+manifests:
+  kustomize:
+    paths:
+      - k8s/overlays/development
+
+deploy:
+  kubectl: {}
+
+portForward:
+  - resourceType: service
+    resourceName: order-service
+    namespace: nexuspay
+    port: 3001
+    localPort: 3001
+  - resourceType: service
+    resourceName: payment-service
+    namespace: nexuspay
+    port: 3002
+    localPort: 3002
+  - resourceType: service
+    resourceName: inventory-service
+    namespace: nexuspay
+    port: 3003
+    localPort: 3003
+  - resourceType: service
+    resourceName: notification-service
+    namespace: nexuspay
+    port: 3004
+    localPort: 3004
+  - resourceType: service
+    resourceName: audit-service
+    namespace: nexuspay
+    port: 3005
+    localPort: 3005
