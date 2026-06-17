@@ -1,0 +1,82 @@
+# ClusterIP services for internal service-to-service traffic and Prometheus
+# scraping. Each is reachable in-cluster as <name>:<port>, e.g.
+# order-service:3001.
+apiVersion: v1
+kind: Service
+metadata:
+  name: order-service
+  namespace: nexuspay
+  labels:
+    app: order-service
+spec:
+  type: ClusterIP
+  selector:
+    app: order-service
+  ports:
+    - name: http
+      port: 3001
+      targetPort: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment-service
+  namespace: nexuspay
+  labels:
+    app: payment-service
+spec:
+  type: ClusterIP
+  selector:
+    app: payment-service
+  ports:
+    - name: http
+      port: 3002
+      targetPort: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventory-service
+  namespace: nexuspay
+  labels:
+    app: inventory-service
+spec:
+  type: ClusterIP
+  selector:
+    app: inventory-service
+  ports:
+    - name: http
+      port: 3003
+      targetPort: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification-service
+  namespace: nexuspay
+  labels:
+    app: notification-service
+spec:
+  type: ClusterIP
+  selector:
+    app: notification-service
+  ports:
+    - name: http
+      port: 3004
+      targetPort: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: audit-service
+  namespace: nexuspay
+  labels:
+    app: audit-service
+spec:
+  type: ClusterIP
+  selector:
+    app: audit-service
+  ports:
+    - name: http
+      port: 3005
+      targetPort: http
