@@ -72,22 +72,25 @@ This is not a CRUD application. It solves real problems that arise when multiple
 - npm >= 10
 
 ### Setup
+
 ```bash
 # Clone the repository
 git clone https://github.com/MrDanLee/nexuspay.git
 cd nexuspay
 
-# Start infrastructure (PostgreSQL, Redis, RabbitMQ)
-docker compose up -d
-
-# Install dependencies
-npm install
-
-# Copy environment configuration
-cp .env.example .env
+# One command: start infrastructure, install, migrate, and seed
+./scripts/setup.sh
 
 # Start all services in development mode
 npm run dev
+```
+
+`setup.sh` starts only the infrastructure containers and runs migrations, so
+the services run on the host via `npm run dev`. To run the **entire stack** in
+containers instead (services included), use the full-stack compose:
+
+```bash
+docker compose up -d --build
 ```
 
 ### Services
@@ -151,6 +154,64 @@ dashboard (request/error rates, latency percentiles, order and payment rates,
 circuit-breaker state). Prometheus loads alert rules for high error rate, high
 p95 latency, and an open payment circuit breaker.
 
+## Deployment
+
+### Docker
+
+Each service has a multi-stage `Dockerfile` (build context = repo root) that
+compiles the shared package and the service, then ships a slim non-root image
+with a `/health/live` healthcheck:
+
+```bash
+docker build -f services/order-service/Dockerfile -t nexuspay/order-service .
+```
+
+`docker compose up -d --build` builds and runs the whole stack (services +
+infrastructure) with dependency health gating.
+
+### Kubernetes
+
+Manifests live under `k8s/`, organized as a Kustomize base with environment
+overlays:
+
+```
+k8s/
+├── base/                  # namespace, config, secret, deployments,
+│                          # services, infrastructure, network policies
+└── overlays/
+    ├── development/       # single replicas, reduced resources
+    └── production/        # higher replicas + HPAs
+```
+
+Render or apply an overlay:
+
+```bash
+# Preview the rendered manifests
+kubectl kustomize k8s/overlays/development
+
+# Apply to the current cluster (e.g. minikube / kind)
+kubectl apply -k k8s/overlays/development
+
+# Production overlay (adds HPAs for order and payment)
+kubectl apply -k k8s/overlays/production
+```
+
+For an inner-loop dev experience on minikube/kind, `skaffold dev` builds the
+images, deploys the development overlay, watches for changes, and port-forwards
+each service to localhost:
+
+```bash
+skaffold dev
+```
+
+Useful operations:
+
+```bash
+kubectl -n nexuspay get pods,svc,hpa
+kubectl -n nexuspay logs deploy/order-service -f
+kubectl -n nexuspay rollout status deploy/order-service
+```
+
 ## Project Structure
 ```
 nexuspay/
@@ -162,9 +223,13 @@ nexuspay/
 │   └── audit-service/       # Immutable audit trail
 ├── packages/
 │   └── shared/              # Common utilities, types, middleware
-├── infra/                   # Docker, Kubernetes, monitoring configs
+├── infra/                   # Prometheus and Grafana configs
+├── k8s/                     # Kubernetes manifests (Kustomize base + overlays)
+├── scripts/                 # setup and dev helper scripts
 ├── docs/                    # Architecture decisions, runbooks
-└── docker-compose.yml       # Local infrastructure
+├── skaffold.yaml            # Local Kubernetes dev loop
+├── docker-compose.yml       # Full stack (services + infrastructure)
+└── docker-compose.observability.yml  # Prometheus, Grafana, Jaeger
 ```
 
 ## License
