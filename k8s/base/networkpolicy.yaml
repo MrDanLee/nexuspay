@@ -1,0 +1,127 @@
+# Network policies: deny all ingress by default, then open only the paths the
+# system actually needs. Enforcement requires a CNI that supports
+# NetworkPolicy (Calico, Cilium, ...). Egress is left open so DNS and the
+# simulated external payment gateway keep working.
+
+# Default: deny all ingress to every pod in the namespace.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  namespace: nexuspay
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+---
+# Allow ingress to the application services from within the namespace
+# (service-to-service calls, health checks, metrics scraping).
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-app-ingress
+  namespace: nexuspay
+spec:
+  podSelector:
+    matchExpressions:
+      - key: app
+        operator: In
+        values:
+          - order-service
+          - payment-service
+          - inventory-service
+          - notification-service
+          - audit-service
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector: {}
+---
+# Allow PostgreSQL ingress only from the application services.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-postgres-from-apps
+  namespace: nexuspay
+spec:
+  podSelector:
+    matchExpressions:
+      - key: app
+        operator: In
+        values:
+          - postgres-orders
+          - postgres-payments
+          - postgres-inventory
+          - postgres-audit
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchExpressions:
+              - key: app
+                operator: In
+                values:
+                  - order-service
+                  - payment-service
+                  - inventory-service
+                  - audit-service
+      ports:
+        - protocol: TCP
+          port: 5432
+---
+# Allow RabbitMQ ingress from all application services.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-rabbitmq-from-apps
+  namespace: nexuspay
+spec:
+  podSelector:
+    matchLabels:
+      app: rabbitmq
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchExpressions:
+              - key: app
+                operator: In
+                values:
+                  - order-service
+                  - payment-service
+                  - inventory-service
+                  - notification-service
+                  - audit-service
+      ports:
+        - protocol: TCP
+          port: 5672
+---
+# Allow Redis ingress from the services that use it.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-redis-from-apps
+  namespace: nexuspay
+spec:
+  podSelector:
+    matchLabels:
+      app: redis
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchExpressions:
+              - key: app
+                operator: In
+                values:
+                  - order-service
+                  - payment-service
+                  - inventory-service
+                  - notification-service
+      ports:
+        - protocol: TCP
+          port: 6379

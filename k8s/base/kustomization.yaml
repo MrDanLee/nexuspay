@@ -17,3 +17,4 @@ resources:
   - notification-deployment.yaml
   - audit-deployment.yaml
   - services.yaml
+  - networkpolicy.yaml
