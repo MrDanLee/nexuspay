@@ -10,6 +10,7 @@ resources:
   - namespace.yaml
   - configmap.yaml
   - secret.yaml
+  - infrastructure.yaml
   - order-deployment.yaml
   - payment-deployment.yaml
   - inventory-deployment.yaml
