@@ -38,3 +38,17 @@ scrape_configs:
       - targets: ['host.docker.internal:3003']
         labels:
           service: inventory-service
+
+  - job_name: notification-service
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['host.docker.internal:3004']
+        labels:
+          service: notification-service
+
+  - job_name: audit-service
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['host.docker.internal:3005']
+        labels:
+          service: audit-service
