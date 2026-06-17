@@ -114,6 +114,115 @@ services:
       timeout: 5s
       retries: 5
 
+  # ──────────────────────────────────────────────
+  # Application services
+  # ──────────────────────────────────────────────
+  order-service:
+    build:
+      context: .
+      dockerfile: services/order-service/Dockerfile
+    container_name: nexuspay-order
+    environment:
+      NODE_ENV: production
+      LOG_LEVEL: info
+      PORT: 3001
+      ORDER_DB_URL: postgres://nexuspay:nexuspay_dev@postgres-orders:5432/nexuspay_orders
+      RABBITMQ_URL: amqp://nexuspay:nexuspay_dev@rabbitmq:5672
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: nexuspay-dev-secret-change-in-production-min-32-chars
+    ports:
+      - '3001:3001'
+    depends_on:
+      postgres-orders:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  payment-service:
+    build:
+      context: .
+      dockerfile: services/payment-service/Dockerfile
+    container_name: nexuspay-payment
+    environment:
+      NODE_ENV: production
+      LOG_LEVEL: info
+      PORT: 3002
+      PAYMENT_DB_URL: postgres://nexuspay:nexuspay_dev@postgres-payments:5432/nexuspay_payments
+      RABBITMQ_URL: amqp://nexuspay:nexuspay_dev@rabbitmq:5672
+      REDIS_URL: redis://redis:6379
+      WEBHOOK_SECRET: whsec_nexuspay_dev_secret_change_me
+    ports:
+      - '3002:3002'
+    depends_on:
+      postgres-payments:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  inventory-service:
+    build:
+      context: .
+      dockerfile: services/inventory-service/Dockerfile
+    container_name: nexuspay-inventory
+    environment:
+      NODE_ENV: production
+      LOG_LEVEL: info
+      PORT: 3003
+      INVENTORY_DB_URL: postgres://nexuspay:nexuspay_dev@postgres-inventory:5432/nexuspay_inventory
+      RABBITMQ_URL: amqp://nexuspay:nexuspay_dev@rabbitmq:5672
+      REDIS_URL: redis://redis:6379
+    ports:
+      - '3003:3003'
+    depends_on:
+      postgres-inventory:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: services/notification-service/Dockerfile
+    container_name: nexuspay-notification
+    environment:
+      NODE_ENV: production
+      LOG_LEVEL: info
+      PORT: 3004
+      RABBITMQ_URL: amqp://nexuspay:nexuspay_dev@rabbitmq:5672
+      REDIS_URL: redis://redis:6379
+    ports:
+      - '3004:3004'
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  audit-service:
+    build:
+      context: .
+      dockerfile: services/audit-service/Dockerfile
+    container_name: nexuspay-audit
+    environment:
+      NODE_ENV: production
+      LOG_LEVEL: info
+      PORT: 3005
+      AUDIT_DB_URL: postgres://nexuspay:nexuspay_dev@postgres-audit:5432/nexuspay_audit
+      RABBITMQ_URL: amqp://nexuspay:nexuspay_dev@rabbitmq:5672
+    ports:
+      - '3005:3005'
+    depends_on:
+      postgres-audit:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
 volumes:
   pgdata-orders:
   pgdata-payments:
